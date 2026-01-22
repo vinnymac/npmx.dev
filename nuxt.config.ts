@@ -90,7 +90,6 @@ export default defineNuxtConfig({
   ogImage: {
     defaults: {
       component: 'Default',
-
     },
   },
 
