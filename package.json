@@ -29,6 +29,8 @@
     "@nuxt/fonts": "^0.12.1",
     "@nuxt/scripts": "^0.13.2",
     "@nuxtjs/html-validator": "^2.1.0",
+    "@shikijs/langs": "^3.21.0",
+    "@shikijs/themes": "^3.21.0",
     "nuxt": "https://pkg.pr.new/nuxt@8d4f9ba",
     "nuxt-og-image": "^5.1.13",
     "perfect-debounce": "^2.1.0",

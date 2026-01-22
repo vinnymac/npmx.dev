@@ -1,6 +1,7 @@
 import { marked, type Tokens } from 'marked'
 import sanitizeHtml from 'sanitize-html'
-import { createHighlighter, type Highlighter } from 'shiki'
+import { createHighlighterCore, type HighlighterCore } from 'shiki/core'
+import { createJavaScriptRegexEngine } from 'shiki/engine/javascript'
 import { hasProtocol } from 'ufo'
 
 // only allow h3-h6 since we shift README headings down by 2 levels
@@ -40,33 +41,36 @@ const ALLOWED_ATTR: Record<string, string[]> = {
 // GitHub-style callout types
 // Format: > [!NOTE], > [!TIP], > [!IMPORTANT], > [!WARNING], > [!CAUTION]
 
-// Singleton highlighter instance
-let highlighter: Highlighter | null = null
+// Singleton highlighter instance using JavaScript engine (no WASM needed)
+let highlighter: HighlighterCore | null = null
 
-async function getHighlighter(): Promise<Highlighter> {
+async function getHighlighter(): Promise<HighlighterCore> {
   if (!highlighter) {
-    highlighter = await createHighlighter({
-      themes: ['github-dark'],
-      langs: [
-        'javascript',
-        'typescript',
-        'json',
-        'html',
-        'css',
-        'bash',
-        'shell',
-        'markdown',
-        'yaml',
-        'vue',
-        'jsx',
-        'tsx',
-        'diff',
-        'sql',
-        'graphql',
-        'python',
-        'rust',
-        'go',
+    highlighter = await createHighlighterCore({
+      themes: [
+        import('@shikijs/themes/github-dark'),
       ],
+      langs: [
+        import('@shikijs/langs/javascript'),
+        import('@shikijs/langs/typescript'),
+        import('@shikijs/langs/json'),
+        import('@shikijs/langs/html'),
+        import('@shikijs/langs/css'),
+        import('@shikijs/langs/bash'),
+        import('@shikijs/langs/shell'),
+        import('@shikijs/langs/markdown'),
+        import('@shikijs/langs/yaml'),
+        import('@shikijs/langs/vue'),
+        import('@shikijs/langs/jsx'),
+        import('@shikijs/langs/tsx'),
+        import('@shikijs/langs/diff'),
+        import('@shikijs/langs/sql'),
+        import('@shikijs/langs/graphql'),
+        import('@shikijs/langs/python'),
+        import('@shikijs/langs/rust'),
+        import('@shikijs/langs/go'),
+      ],
+      engine: createJavaScriptRegexEngine(),
     })
   }
   return highlighter
