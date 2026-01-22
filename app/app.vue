@@ -320,8 +320,17 @@ button {
   padding-left: 1.5rem;
 }
 
+.readme-content ul {
+  list-style-type: disc;
+}
+
+.readme-content ol {
+  list-style-type: decimal;
+}
+
 .readme-content li {
   margin-bottom: 0.5rem;
+  display: list-item;
 }
 
 .readme-content li::marker {
@@ -476,6 +485,20 @@ p > span > code,
 /* View transition for search box (includes / and input) */
 .search-box {
   view-transition-name: search-box;
+}
+
+/* Safari search input fixes */
+input[type="search"] {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-results-button,
+input[type="search"]::-webkit-search-results-decoration {
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 /* View transition for logo (hero -> header) */

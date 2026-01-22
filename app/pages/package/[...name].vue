@@ -223,56 +223,55 @@ defineOgImageComponent('Package', {
     >
       <!-- Package header -->
       <header class="mb-8 pb-8 border-b border-border">
-        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
-          <div class="flex-1 min-w-0">
-            <h1 class="font-mono text-2xl sm:text-3xl font-medium mb-2">
+        <div class="mb-4">
+          <!-- Package name and version -->
+          <div class="flex items-center gap-3 mb-2 flex-wrap">
+            <h1 class="font-mono text-2xl sm:text-3xl font-medium">
               {{ pkg.name }}
             </h1>
-            <!-- Fixed height description container to prevent CLS -->
-            <div
-              ref="descriptionRef"
-              class="relative max-w-2xl min-h-[4.5rem]"
+            <span
+              v-if="displayVersion"
+              class="shrink-0 px-3 py-1 font-mono text-sm bg-bg-muted border border-border rounded-md"
             >
-              <p
-                v-if="pkg.description"
-                class="text-fg-muted text-base m-0 overflow-hidden"
-                :class="descriptionExpanded ? '' : 'max-h-[4.5rem]'"
+              v{{ displayVersion.version }}
+              <span
+                v-if="requestedVersion && latestVersion && displayVersion.version !== latestVersion.version"
+                class="text-fg-subtle"
+              >(not latest)</span>
+            </span>
+          </div>
+          <!-- Fixed height description container to prevent CLS -->
+          <div
+            ref="descriptionRef"
+            class="relative max-w-2xl min-h-[4.5rem]"
+          >
+            <p
+              v-if="pkg.description"
+              class="text-fg-muted text-base m-0 overflow-hidden"
+              :class="descriptionExpanded ? '' : 'max-h-[4.5rem]'"
+            >
+              <MarkdownText :text="pkg.description" />
+            </p>
+            <p
+              v-else
+              class="text-fg-subtle text-base m-0 italic"
+            >
+              No description provided
+            </p>
+            <!-- Fade overlay with show more button - only when collapsed and overflowing -->
+            <div
+              v-if="pkg.description && descriptionOverflows && !descriptionExpanded"
+              class="absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-bg via-bg/90 to-transparent flex items-end justify-end"
+            >
+              <button
+                type="button"
+                class="font-mono text-xs text-fg-muted hover:text-fg bg-bg px-1 transition-colors duration-200"
+                @click="descriptionExpanded = true"
               >
-                <MarkdownText :text="pkg.description" />
-              </p>
-              <p
-                v-else
-                class="text-fg-subtle text-base m-0 italic"
-              >
-                No description provided
-              </p>
-              <!-- Fade overlay with show more button - only when collapsed and overflowing -->
-              <div
-                v-if="pkg.description && descriptionOverflows && !descriptionExpanded"
-                class="absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-bg via-bg/90 to-transparent flex items-end justify-end"
-              >
-                <button
-                  type="button"
-                  class="font-mono text-xs text-fg-muted hover:text-fg bg-bg px-1 transition-colors duration-200"
-                  @click="descriptionExpanded = true"
-                >
-                  show more
-                </button>
-              </div>
+                show more
+              </button>
             </div>
           </div>
-
-          <!-- Version badge -->
-          <span
-            v-if="displayVersion"
-            class="shrink-0 px-3 py-1 font-mono text-sm bg-bg-muted border border-border rounded-md"
-          >
-            v{{ displayVersion.version }}
-            <span
-              v-if="requestedVersion && latestVersion && displayVersion.version !== latestVersion.version"
-              class="text-fg-subtle"
-            >(not latest)</span>
-          </span>
         </div>
 
         <!-- Stats grid -->
@@ -347,6 +346,7 @@ defineOgImageComponent('Package', {
             <li v-if="repositoryUrl">
               <a
                 :href="repositoryUrl"
+                target="_blank"
                 rel="noopener noreferrer"
                 class="link-subtle font-mono text-sm inline-flex items-center gap-1.5"
               >
@@ -357,6 +357,7 @@ defineOgImageComponent('Package', {
             <li v-if="homepageUrl">
               <a
                 :href="homepageUrl"
+                target="_blank"
                 rel="noopener noreferrer"
                 class="link-subtle font-mono text-sm inline-flex items-center gap-1.5"
               >
@@ -367,6 +368,7 @@ defineOgImageComponent('Package', {
             <li v-if="displayVersion?.bugs?.url">
               <a
                 :href="displayVersion.bugs.url"
+                target="_blank"
                 rel="noopener noreferrer"
                 class="link-subtle font-mono text-sm inline-flex items-center gap-1.5"
               >
@@ -377,11 +379,45 @@ defineOgImageComponent('Package', {
             <li>
               <a
                 :href="`https://www.npmjs.com/package/${pkg.name}`"
+                target="_blank"
                 rel="noopener noreferrer"
                 class="link-subtle font-mono text-sm inline-flex items-center gap-1.5"
               >
                 <span class="i-carbon-cube w-4 h-4" />
                 npm
+              </a>
+            </li>
+            <li>
+              <a
+                :href="`https://socket.dev/npm/package/${pkg.name}/overview/${displayVersion?.version ?? 'latest'}`"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="link-subtle font-mono text-sm inline-flex items-center gap-1.5"
+              >
+                <span class="i-carbon-security w-4 h-4" />
+                security
+              </a>
+            </li>
+            <li>
+              <a
+                :href="`https://npm.chart.dev/${pkg.name}`"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="link-subtle font-mono text-sm inline-flex items-center gap-1.5"
+              >
+                <span class="i-carbon-chart-line w-4 h-4" />
+                trends
+              </a>
+            </li>
+            <li>
+              <a
+                :href="`https://pkg-size.dev/${pkg.name}`"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="link-subtle font-mono text-sm inline-flex items-center gap-1.5"
+              >
+                <span class="i-carbon-data-volume w-4 h-4" />
+                size
               </a>
             </li>
           </ul>
@@ -591,12 +627,24 @@ defineOgImageComponent('Package', {
             v-if="sortedDependencies.length > 0"
             aria-labelledby="dependencies-heading"
           >
-            <h2
-              id="dependencies-heading"
-              class="text-xs text-fg-subtle uppercase tracking-wider mb-3"
-            >
-              Dependencies ({{ sortedDependencies.length }})
-            </h2>
+            <div class="flex items-center justify-between mb-3">
+              <h2
+                id="dependencies-heading"
+                class="text-xs text-fg-subtle uppercase tracking-wider"
+              >
+                Dependencies ({{ sortedDependencies.length }})
+              </h2>
+              <a
+                :href="`https://npmgraph.js.org/?q=${pkg.name}`"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="link-subtle"
+                aria-label="View dependency graph"
+                title="View dependency graph"
+              >
+                <span class="i-carbon-network-3 w-4 h-4 inline-block" />
+              </a>
+            </div>
             <ul class="space-y-1 list-none m-0 p-0">
               <li
                 v-for="[dep, version] in sortedDependencies.slice(0, depsExpanded ? undefined : 10)"

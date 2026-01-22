@@ -210,7 +210,7 @@ defineOgImageComponent('Default', {
 </script>
 
 <template>
-  <main class="container py-8 sm:py-12">
+  <main class="container py-8 sm:py-12 overflow-x-hidden">
     <header class="mb-8">
       <h1 class="font-mono text-2xl sm:text-3xl font-medium mb-6">
         search
@@ -248,7 +248,7 @@ defineOgImageComponent('Default', {
                 name="q"
                 placeholder="search packages..."
                 autocomplete="off"
-                class="w-full bg-bg-subtle border border-border rounded-lg pl-8 pr-4 py-3 font-mono text-sm text-fg placeholder:text-fg-subtle transition-all duration-300 focus:(border-border-hover outline-none)"
+                class="w-full max-w-full bg-bg-subtle border border-border rounded-lg pl-8 pr-4 py-3 font-mono text-sm text-fg placeholder:text-fg-subtle transition-all duration-300 focus:(border-border-hover outline-none) appearance-none"
                 @focus="isSearchFocused = true"
                 @blur="isSearchFocused = false"
               >
@@ -317,7 +317,7 @@ defineOgImageComponent('Default', {
                 class="block focus:outline-none decoration-none"
               >
                 <header class="flex items-start justify-between gap-4 mb-2">
-                  <h2 class="font-mono text-base font-medium text-fg group-hover:text-fg transition-colors duration-200">
+                  <h2 class="font-mono text-base font-medium text-fg group-hover:text-fg transition-colors duration-200 min-w-0 break-all">
                     {{ result.package.name }}
                   </h2>
                   <span
