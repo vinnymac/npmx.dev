@@ -5,7 +5,7 @@ export default defineNuxtConfig({
     '@nuxtjs/html-validator',
     '@nuxt/scripts',
     '@nuxt/fonts',
-    // 'nuxt-og-image',
+    'nuxt-og-image',
     '@nuxt/test-utils',
     '@vite-pwa/nuxt',
   ],
@@ -51,12 +51,6 @@ export default defineNuxtConfig({
   },
 
   compatibilityDate: '2024-04-03',
-
-  nitro: {
-    externals: {
-      inline: ['isomorphic-dompurify', '@exodus/bytes', 'html-encoding-sniffer'],
-    },
-  },
 
   eslint: {
     config: {

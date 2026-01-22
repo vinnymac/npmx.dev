@@ -1,6 +1,7 @@
 import { marked, type Tokens } from 'marked'
-import DOMPurify from 'isomorphic-dompurify'
+import sanitizeHtml from 'sanitize-html'
 import { createHighlighter, type Highlighter } from 'shiki'
+import { hasProtocol } from 'ufo'
 
 // only allow h3-h6 since we shift README headings down by 2 levels
 // (page h1 = package name, h2 = "Readme" section, so README h1 → h3)
@@ -18,18 +19,23 @@ const ALLOWED_TAGS = [
   'kbd', 'mark',
 ]
 
-const ALLOWED_ATTR = [
-  'href', 'src', 'alt', 'title',
-  'class', 'id',
-  'target', 'rel',
-  'width', 'height',
-  'colspan', 'rowspan',
-  'align',
-  'open',
-  'data-level', // For visual heading styling
-  'data-callout', // For GitHub-style callouts
-  'style', // For Shiki inline styles
-]
+const ALLOWED_ATTR: Record<string, string[]> = {
+  a: ['href', 'title', 'target', 'rel'],
+  img: ['src', 'alt', 'title', 'width', 'height'],
+  source: ['src', 'type', 'media'],
+  th: ['colspan', 'rowspan', 'align'],
+  td: ['colspan', 'rowspan', 'align'],
+  h3: ['id', 'data-level'],
+  h4: ['id', 'data-level'],
+  h5: ['id', 'data-level'],
+  h6: ['id', 'data-level'],
+  blockquote: ['data-callout'],
+  details: ['open'],
+  code: ['class'],
+  pre: ['class', 'style'],
+  span: ['class', 'style'],
+  div: ['class', 'style'],
+}
 
 // GitHub-style callout types
 // Format: > [!NOTE], > [!TIP], > [!IMPORTANT], > [!WARNING], > [!CAUTION]
@@ -159,7 +165,7 @@ export async function renderReadmeHtml(content: string, packageName: string): Pr
 
     const calloutMatch = body.match(/^<p>\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\](?:<br>)?\s*/i)
 
-    if (calloutMatch) {
+    if (calloutMatch?.[1]) {
       const calloutType = calloutMatch[1].toLowerCase()
       const cleanedBody = body.replace(calloutMatch[0], '<p>')
       return `<blockquote data-callout="${calloutType}">${cleanedBody}</blockquote>\n`
@@ -172,25 +178,28 @@ export async function renderReadmeHtml(content: string, packageName: string): Pr
 
   const rawHtml = marked.parse(content) as string
 
-  DOMPurify.addHook('afterSanitizeAttributes', (node) => {
-    if (node.tagName === 'IMG' && node.hasAttribute('src')) {
-      const src = node.getAttribute('src') || ''
-      const resolved = resolveImageUrl(src, packageName)
-      if (resolved !== src) {
-        node.setAttribute('src', resolved)
-      }
-    }
+  const sanitized = sanitizeHtml(rawHtml, {
+    allowedTags: ALLOWED_TAGS,
+    allowedAttributes: ALLOWED_ATTR,
+    allowedSchemes: ['http', 'https', 'mailto'],
+    // Transform img src URLs (GitHub blob → raw, relative → jsdelivr)
+    transformTags: {
+      img: (tagName, attribs) => {
+        if (attribs.src) {
+          attribs.src = resolveImageUrl(attribs.src, packageName)
+        }
+        return { tagName, attribs }
+      },
+      a: (tagName, attribs) => {
+        // Add security attributes for external links
+        if (attribs.href && hasProtocol(attribs.href, { acceptRelative: true })) {
+          attribs.rel = 'nofollow noreferrer noopener'
+          attribs.target = '_blank'
+        }
+        return { tagName, attribs }
+      },
+    },
   })
-
-  const sanitized = DOMPurify.sanitize(rawHtml, {
-    ALLOWED_TAGS,
-    ALLOWED_ATTR,
-    ADD_ATTR: ['target'],
-    FORBID_TAGS: ['style', 'script', 'iframe', 'form', 'input', 'button'],
-    FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover', 'style'],
-  })
-
-  DOMPurify.removeHook('afterSanitizeAttributes')
 
   return sanitized
 }
