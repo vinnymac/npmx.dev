@@ -5,7 +5,7 @@ export default defineNuxtConfig({
     '@nuxtjs/html-validator',
     '@nuxt/scripts',
     '@nuxt/fonts',
-    'nuxt-og-image',
+    // 'nuxt-og-image',
     '@nuxt/test-utils',
     '@vite-pwa/nuxt',
   ],
@@ -45,6 +45,7 @@ export default defineNuxtConfig({
   },
 
   experimental: {
+    payloadExtraction: true,
     viewTransition: true,
     typedPages: true,
   },
@@ -53,7 +54,7 @@ export default defineNuxtConfig({
 
   nitro: {
     externals: {
-      inline: ['isomorphic-dompurify'],
+      inline: ['isomorphic-dompurify', '@exodus/bytes'],
     },
   },
 
