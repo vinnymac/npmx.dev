@@ -7,13 +7,6 @@ export default defineNuxtConfig({
         nuxt.options.pwa.pwaAssets.disabled = true
       }
     },
-    function (_, nuxt) {
-      nuxt.hook('modules:done', () => {
-        nuxt.hook('nitro:build:before', (nitro) => {
-          nitro.options.ssrRoutes = []
-        })
-      })
-    },
     '@unocss/nuxt',
     '@nuxt/eslint',
     '@nuxtjs/html-validator',
@@ -46,9 +39,8 @@ export default defineNuxtConfig({
 
   routeRules: {
     '/': { prerender: true },
-    '/package/**': { isr: 60 },
-    '/~**': { isr: 60 },
-    '/api/**': { isr: 60 },
+    '/**': { isr: 60 },
+    '/search': { isr: false, cache: false },
     '/_v/script.js': { proxy: 'https://npmx.dev/_vercel/insights/script.js' },
     '/_v/view': { proxy: 'https://npmx.dev/_vercel/insights/view' },
     '/_v/event': { proxy: 'https://npmx.dev/_vercel/insights/event' },
