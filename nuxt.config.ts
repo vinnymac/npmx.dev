@@ -40,10 +40,6 @@ export default defineNuxtConfig({
     '/_v/session': { proxy: 'https://npmx.dev/_vercel/insights/session' },
   },
 
-  future: {
-    compatibilityVersion: 4,
-  },
-
   experimental: {
     payloadExtraction: true,
     viewTransition: true,
@@ -75,7 +71,7 @@ export default defineNuxtConfig({
   fonts: {
     families: [
       {
-        name: 'Inter',
+        name: 'Geist',
         weights: ['400', '500', '600'],
         global: true,
       },

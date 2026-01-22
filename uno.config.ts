@@ -1,14 +1,9 @@
-import {
-  defineConfig,
-  presetIcons,
-  presetUno,
-  transformerDirectives,
-  transformerVariantGroup,
-} from 'unocss'
+import { defineConfig, presetIcons, presetWind4, transformerDirectives, transformerVariantGroup } from 'unocss'
+import type { Theme } from '@unocss/preset-wind4/theme'
 
 export default defineConfig({
   presets: [
-    presetUno(),
+    presetWind4(),
     presetIcons({
       scale: 1.2,
     }),
@@ -18,6 +13,10 @@ export default defineConfig({
     transformerVariantGroup(),
   ],
   theme: {
+    font: {
+      mono: '\'JetBrains Mono\', monospace',
+      sans: '\'Geist\', system-ui, -apple-system, sans-serif',
+    },
     colors: {
       // Minimal black & white palette with subtle grays
       bg: {
@@ -71,7 +70,7 @@ export default defineConfig({
         'skeleton-pulse': 'infinite',
       },
     },
-  },
+  } satisfies Theme,
   shortcuts: [
     // Layout
     ['container', 'max-w-4xl mx-auto px-4 sm:px-6'],

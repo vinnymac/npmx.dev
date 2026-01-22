@@ -4,7 +4,7 @@
   >
     <h1
       class="text-6xl font-medium tracking-tight"
-      style="font-family: 'JetBrains Mono', monospace"
+      style="font-family: 'JetBrains Mono'"
     >
       <span
         class="text-[#666666]"

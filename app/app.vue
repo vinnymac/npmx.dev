@@ -14,7 +14,7 @@ useHead({
   <div class="min-h-screen flex flex-col bg-bg text-fg">
     <a
       href="#main-content"
-      class="skip-link"
+      class="skip-link font-mono"
     >Skip to main content</a>
 
     <header class="sticky top-0 z-50 bg-bg/80 backdrop-blur-md border-b border-border">
@@ -109,7 +109,6 @@ body {
   margin: 0;
   background-color: #0a0a0a;
   color: #fafafa;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   line-height: 1.6;
 }
 
@@ -179,7 +178,6 @@ button {
   padding: 0.5rem 1rem;
   background: #fafafa;
   color: #0a0a0a;
-  font-family: 'JetBrains Mono', monospace;
   font-size: 0.875rem;
   z-index: 100;
   transition: top 0.2s ease;
@@ -208,7 +206,7 @@ button {
 .readme-content h5,
 .readme-content h6 {
   color: #fafafa;
-  font-family: 'JetBrains Mono', monospace;
+  @apply font-mono;
   font-weight: 500;
   margin-top: 2rem;
   margin-bottom: 1rem;
@@ -240,7 +238,7 @@ button {
 }
 
 .readme-content code {
-  font-family: 'JetBrains Mono', monospace;
+  @apply font-mono;
   font-size: 0.875em;
   background: #1a1a1a;
   padding: 0.2em 0.4em;
@@ -267,7 +265,7 @@ button {
   background: transparent !important;
   border: none;
   padding: 0;
-  font-family: 'JetBrains Mono', monospace;
+  @apply font-mono;
   font-size: 0.875rem;
   color: #fafafa;
   /* Prevent code from forcing width */
@@ -310,7 +308,7 @@ button {
 
 .readme-content blockquote[data-callout]::before {
   display: block;
-  font-family: 'JetBrains Mono', monospace;
+  @apply font-mono;
   font-size: 0.75rem;
   font-weight: 500;
   text-transform: uppercase;
@@ -427,7 +425,7 @@ button {
 /* Inline code in package descriptions */
 p > span > code,
 .line-clamp-2 code {
-  font-family: 'JetBrains Mono', monospace;
+  @apply font-mono;
   font-size: 0.85em;
   background: #1a1a1a;
   padding: 0.1em 0.3em;
