@@ -38,6 +38,8 @@ npmx.dev supports npm permalink patterns:
 | `/~<username>` | [`/~sindresorhus`](https://npmx.dev/~sindresorhus) |
 | `/org/<name>` | [`/org/nuxt`](https://npmx.dev/org/nuxt) |
 
+**Coming soon** (with local connector): `/package/<name>/access`, `/package/<name>/collaborators`, `/settings/*`
+
 ## Tech Stack
 
 - [Nuxt 4](https://nuxt.com/) - Vue framework
