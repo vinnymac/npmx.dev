@@ -8,6 +8,7 @@ export default defineNuxtConfig({
     '@nuxt/image',
     'nuxt-og-image',
     '@nuxt/test-utils',
+    '@vite-pwa/nuxt',
   ],
 
   devtools: { enabled: true },
@@ -68,5 +69,20 @@ export default defineNuxtConfig({
 
   htmlValidator: {
     failOnError: true,
+  },
+
+  pwa: {
+    // Disable service worker - only using for asset generation
+    disable: true,
+    pwaAssets: {
+      config: true,
+    },
+    manifest: {
+      name: 'npmx',
+      short_name: 'npmx',
+      description: 'A fast, accessible npm package browser for power users',
+      theme_color: '#0a0a0a',
+      background_color: '#0a0a0a',
+    },
   },
 })

@@ -43,6 +43,8 @@
     "@nuxt/test-utils": "3.23.0",
     "@playwright/test": "1.57.0",
     "@unocss/nuxt": "^66.6.0",
+    "@vite-pwa/assets-generator": "^1.0.2",
+    "@vite-pwa/nuxt": "^1.1.0",
     "@vitest/browser-playwright": "^4.0.17",
     "@vitest/coverage-v8": "^4.0.17",
     "@vue/test-utils": "2.4.6",
@@ -58,6 +60,15 @@
     "unocss": "^66.6.0",
     "vitest": "^4.0.17",
     "vue-tsc": "3.2.2"
+  },
+  "pnpm": {
+    "packageExtensions": {
+      "@nuxt/scripts": {
+        "dependencies": {
+          "estree-walker": "^3.0.3"
+        }
+      }
+    }
   },
   "simple-git-hooks": {
     "pre-commit": "npx lint-staged"
