@@ -58,13 +58,15 @@ export function logMessage(message: string): void {
  * Show the connection token in a nice box
  */
 export function showToken(token: string, port: number): void {
+  const connectUrl = `https://npmx.dev/?token=${token}&port=${port}`
+
   p.note(
     [
-      `Token: ${pc.bold(pc.cyan(token))}`,
+      `Open: ${pc.bold(pc.underline(pc.cyan(connectUrl)))}`,
       '',
-      pc.dim(`Server: http://localhost:${port}`),
+      pc.dim(`Or paste token manually: ${token}`),
     ].join('\n'),
-    'Paste this token in npmx.dev to connect',
+    'Click to connect',
   )
 }
 

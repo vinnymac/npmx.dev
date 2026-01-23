@@ -68,8 +68,23 @@ export const useConnector = createSharedComposable(function useConnector() {
 
   const baseUrl = computed(() => `http://localhost:${config.value?.port ?? DEFAULT_PORT}`)
 
-  // Load persisted config on client
+  const route = useRoute()
+  const router = useRouter()
+
   onMounted(() => {
+    const urlToken = route.query.token as string | undefined
+    const urlPort = route.query.port as string | undefined
+
+    if (urlToken) {
+      const { token: _, port: __, ...cleanQuery } = route.query
+      router.replace({ query: cleanQuery })
+
+      // Connect with URL params
+      const port = urlPort ? Number.parseInt(urlPort, 10) : DEFAULT_PORT
+      connect(urlToken, port)
+      return
+    }
+
     const stored = localStorage.getItem(STORAGE_KEY)
     if (stored) {
       try {
