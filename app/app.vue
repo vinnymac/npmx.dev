@@ -86,18 +86,13 @@ onUnmounted(() => {
             </NuxtLink>
           </li>
           <li class="flex">
-            <a
-              href="https://github.com/danielroe/npmx.dev"
-              rel="noopener noreferrer"
-              class="link-subtle font-mono text-sm inline-flex items-center gap-1.5"
-            >
-              <span class="i-carbon-logo-github w-4 h-4" />
-              <span class="hidden sm:inline">github</span>
-            </a>
-          </li>
-          <li class="flex">
             <ClientOnly>
               <ConnectorStatus />
+              <template #fallback>
+                <div class="w-8 h-8 flex items-center justify-center">
+                  <span class="w-2.5 h-2.5 rounded-full bg-fg-subtle" />
+                </div>
+              </template>
             </ClientOnly>
           </li>
         </ul>

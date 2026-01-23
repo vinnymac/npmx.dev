@@ -2,12 +2,13 @@
 const { isConnected, isConnecting, npmUser, error, activeOperations, hasPendingOperations } = useConnector()
 
 const showModal = ref(false)
+const showTooltip = ref(false)
 
 const statusText = computed(() => {
   if (isConnecting.value) return 'connecting…'
-  if (isConnected.value && npmUser.value) return `@${npmUser.value}`
+  if (isConnected.value && npmUser.value) return `connected as @${npmUser.value}`
   if (isConnected.value) return 'connected'
-  return 'disconnected'
+  return 'connect local CLI'
 })
 
 const statusColor = computed(() => {
@@ -31,27 +32,46 @@ const ariaLabel = computed(() => {
   <div class="relative">
     <button
       type="button"
-      class="flex items-center gap-2 px-3 py-1.5 font-mono text-xs text-fg-muted hover:text-fg bg-bg-subtle border border-border rounded-md transition-colors duration-200 hover:border-border-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fg/50"
+      class="relative flex items-center justify-center w-8 h-8 rounded-md transition-colors duration-200 hover:bg-bg-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fg/50"
       :aria-label="ariaLabel"
       @click="showModal = true"
+      @mouseenter="showTooltip = true"
+      @mouseleave="showTooltip = false"
+      @focus="showTooltip = true"
+      @blur="showTooltip = false"
     >
+      <!-- Status dot -->
       <span
-        class="w-2 h-2 rounded-full transition-colors duration-200"
+        class="w-2.5 h-2.5 rounded-full transition-colors duration-200"
         :class="statusColor"
         aria-hidden="true"
       />
-      <span class="hidden sm:inline">{{ statusText }}</span>
-      <span class="sm:hidden">{{ isConnected ? 'on' : 'off' }}</span>
-      <!-- Operation count badge (only active operations) -->
+      <!-- Operation count badge (overlaid) -->
       <span
         v-if="isConnected && operationCount > 0"
-        class="min-w-[1.25rem] h-5 px-1 flex items-center justify-center font-mono text-xs rounded-full"
+        class="absolute -top-0.5 -right-0.5 min-w-[1rem] h-4 px-1 flex items-center justify-center font-mono text-[10px] rounded-full"
         :class="hasPendingOperations ? 'bg-yellow-500 text-black' : 'bg-blue-500 text-white'"
         aria-hidden="true"
       >
         {{ operationCount }}
       </span>
     </button>
+
+    <!-- Tooltip -->
+    <Transition
+      enter-active-class="transition-opacity duration-150"
+      leave-active-class="transition-opacity duration-100"
+      enter-from-class="opacity-0"
+      leave-to-class="opacity-0"
+    >
+      <div
+        v-if="showTooltip"
+        role="tooltip"
+        class="absolute right-0 top-full mt-2 px-2 py-1 font-mono text-xs text-fg bg-bg-elevated border border-border rounded shadow-lg whitespace-nowrap z-50"
+      >
+        {{ statusText }}
+      </div>
+    </Transition>
 
     <ConnectorModal
       v-model:open="showModal"
