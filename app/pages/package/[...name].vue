@@ -168,11 +168,15 @@ const selectedPMAction = computed(() => currentPM.value.action)
 const installCommand = computed(() => {
   if (!pkg.value) return ''
   const pm = currentPM.value
+  let command = `${pm.label} ${pm.action} ${pkg.value.name}`
   // deno uses "add npm:package" format
   if (pm.id === 'deno') {
-    return `${pm.label} ${pm.action}${pkg.value.name}`
+    command = `${pm.label} ${pm.action}${pkg.value.name}`
   }
-  return `${pm.label} ${pm.action} ${pkg.value.name}`
+  if (requestedVersion.value) {
+    command += `@${requestedVersion.value}`
+  }
+  return command
 })
 
 // Copy install command
@@ -517,7 +521,10 @@ defineOgImageComponent('Package', {
               >&nbsp;{{ pkg.name }}</span><span
                 v-else
                 class="text-fg-muted"
-              >{{ pkg.name }}</span><template #fallback><span class="text-fg">npm</span>&nbsp;<span class="text-fg-muted">install {{ pkg.name }}</span></template></ClientOnly></code>
+              >{{ pkg.name }}</span><span
+                v-if="requestedVersion"
+                class="text-fg-muted"
+              >@{{ requestedVersion }}</span><template #fallback><span class="text-fg">npm</span>&nbsp;<span class="text-fg-muted">install {{ pkg.name }}</span></template></ClientOnly></code>
             </div>
           </div>
           <button
