@@ -1,5 +1,7 @@
 import type {
   Packument,
+  PackumentVersion,
+  SlimPackument,
   NpmSearchResponse,
   NpmDownloadCount,
   NpmDownloadRange,
@@ -66,12 +68,78 @@ function encodePackageName(name: string): string {
   return encodeURIComponent(name)
 }
 
+/** Maximum number of versions to include in the client payload */
+const MAX_VERSIONS = 20
+
+/**
+ * Transform a full Packument into a slimmed version for client-side use.
+ * Reduces payload size by:
+ * - Removing readme (fetched separately)
+ * - Limiting versions to recent MAX_VERSIONS
+ * - Stripping unnecessary fields from version objects
+ */
+function transformPackument(pkg: Packument): SlimPackument {
+  // Sort versions by publish time (newest first)
+  const sortedVersionKeys = Object.keys(pkg.versions)
+    .filter(v => pkg.time[v]) // Only versions with timestamps
+    .sort((a, b) => {
+      const timeA = pkg.time[a]
+      const timeB = pkg.time[b]
+      if (!timeA || !timeB) return 0
+      return new Date(timeB).getTime() - new Date(timeA).getTime()
+    })
+    .slice(0, MAX_VERSIONS)
+
+  // Always include the latest dist-tag version even if not in top MAX_VERSIONS
+  const latestTag = pkg['dist-tags']?.latest
+  if (latestTag && !sortedVersionKeys.includes(latestTag)) {
+    sortedVersionKeys.push(latestTag)
+  }
+
+  // Build filtered versions object
+  const filteredVersions: Record<string, PackumentVersion> = {}
+  for (const v of sortedVersionKeys) {
+    const version = pkg.versions[v]
+    if (version) {
+      // Strip readme and scripts from each version to reduce size
+      const { readme: _readme, scripts: _scripts, ...slimVersion } = version
+      filteredVersions[v] = slimVersion as PackumentVersion
+    }
+  }
+
+  // Build filtered time object (only for included versions)
+  const filteredTime: Record<string, string> = {}
+  if (pkg.time.modified) filteredTime.modified = pkg.time.modified
+  if (pkg.time.created) filteredTime.created = pkg.time.created
+  for (const v of sortedVersionKeys) {
+    if (pkg.time[v]) filteredTime[v] = pkg.time[v]
+  }
+
+  return {
+    '_id': pkg._id,
+    '_rev': pkg._rev,
+    'name': pkg.name,
+    'description': pkg.description,
+    'dist-tags': pkg['dist-tags'],
+    'time': filteredTime,
+    'maintainers': pkg.maintainers,
+    'author': pkg.author,
+    'license': pkg.license,
+    'homepage': pkg.homepage,
+    'keywords': pkg.keywords,
+    'repository': pkg.repository,
+    'bugs': pkg.bugs,
+    'versions': filteredVersions,
+  }
+}
+
 export function usePackage(name: MaybeRefOrGetter<string>) {
   const registry = useNpmRegistry()
 
   return useLazyAsyncData(
     () => `package:${toValue(name)}`,
     () => registry.fetchPackage(toValue(name)),
+    { transform: transformPackument },
   )
 }
 
