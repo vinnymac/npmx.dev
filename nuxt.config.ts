@@ -17,7 +17,7 @@ export default defineNuxtConfig({
     '@vite-pwa/nuxt',
   ],
 
-  devtools: { enabled: true },
+  devtools: { enabled: !true },
 
   app: {
     head: {
@@ -40,7 +40,7 @@ export default defineNuxtConfig({
   routeRules: {
     '/': { prerender: true },
     '/**': { isr: 60 },
-    '/package/**': { isr: false },
+    '/package/**': { isr: 60 },
     '/search': { isr: false, cache: false },
     '/_v/script.js': { proxy: 'https://npmx.dev/_vercel/insights/script.js' },
     '/_v/view': { proxy: 'https://npmx.dev/_vercel/insights/view' },
@@ -65,7 +65,6 @@ export default defineNuxtConfig({
 
   nitro: {
     externals: {
-      // Inline shiki modules to avoid module resolution issues on Vercel
       inline: [
         'shiki',
         '@shikijs/langs',
