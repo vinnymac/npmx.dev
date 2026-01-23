@@ -15,7 +15,7 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare && simple-git-hooks",
-    "test:types": "vue-tsc -b --noEmit",
+    "test:types": "nuxt prepare && vue-tsc -b --noEmit",
     "test": "vitest",
     "test:coverage": "vitest --coverage",
     "test:unit": "vitest --project unit",

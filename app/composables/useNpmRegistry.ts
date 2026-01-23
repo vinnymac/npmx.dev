@@ -57,10 +57,10 @@ const RECENT_VERSIONS_COUNT = 5
  * Transform a full Packument into a slimmed version for client-side use.
  * Reduces payload size by:
  * - Removing readme (fetched separately)
- * - Including only: 5 most recent versions + one version per dist-tag
+ * - Including only: 5 most recent versions + one version per dist-tag + requested version
  * - Stripping unnecessary fields from version objects
  */
-function transformPackument(pkg: Packument): SlimPackument {
+function transformPackument(pkg: Packument, requestedVersion?: string | null): SlimPackument {
   // Get versions pointed to by dist-tags
   const distTagVersions = new Set(Object.values(pkg['dist-tags'] ?? {}))
 
@@ -75,8 +75,13 @@ function transformPackument(pkg: Packument): SlimPackument {
     })
     .slice(0, RECENT_VERSIONS_COUNT)
 
-  // Combine: recent versions + dist-tag versions (deduplicated)
+  // Combine: recent versions + dist-tag versions + requested version (deduplicated)
   const includedVersions = new Set([...recentVersions, ...distTagVersions])
+
+  // Add the requested version if it exists in the package
+  if (requestedVersion && pkg.versions[requestedVersion]) {
+    includedVersions.add(requestedVersion)
+  }
 
   // Build filtered versions object
   const filteredVersions: Record<string, PackumentVersion> = {}
@@ -115,10 +120,10 @@ function transformPackument(pkg: Packument): SlimPackument {
   }
 }
 
-export function usePackage(name: MaybeRefOrGetter<string>) {
+export function usePackage(name: MaybeRefOrGetter<string>, requestedVersion?: MaybeRefOrGetter<string | null>) {
   return useLazyAsyncData(
-    () => `package:${toValue(name)}`,
-    () => fetchNpmPackage(toValue(name)).then(r => transformPackument(r)),
+    () => `package:${toValue(name)}:${toValue(requestedVersion) ?? ''}`,
+    () => fetchNpmPackage(toValue(name)).then(r => transformPackument(r, toValue(requestedVersion))),
   )
 }
 

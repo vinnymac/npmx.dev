@@ -40,12 +40,12 @@ const orgName = computed(() => {
   return match ? match[1] : null
 })
 
-const { data: pkg, status, error } = usePackage(packageName)
+const { data: pkg, status, error } = usePackage(packageName, requestedVersion)
 
 const { data: downloads } = usePackageDownloads(packageName, 'last-week')
 
 // Fetch README for specific version if requested, otherwise latest
-const { data: readmeData } = useLazyFetch(() => {
+const { data: readmeData } = useLazyFetch<{ html: string }>(() => {
   const base = `/api/registry/readme/${packageName.value}`
   const version = requestedVersion.value
   return version ? `${base}/v/${version}` : base
