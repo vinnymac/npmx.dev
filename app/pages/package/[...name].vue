@@ -32,6 +32,14 @@ const parsedRoute = computed(() => {
 const packageName = computed(() => parsedRoute.value.packageName)
 const requestedVersion = computed(() => parsedRoute.value.requestedVersion)
 
+// Extract org name from scoped package (e.g., "@nuxt/kit" -> "nuxt")
+const orgName = computed(() => {
+  const name = packageName.value
+  if (!name.startsWith('@')) return null
+  const match = name.match(/^@([^/]+)\//)
+  return match ? match[1] : null
+})
+
 const { data: pkg, status, error } = usePackage(packageName)
 
 const { data: downloads } = usePackageDownloads(packageName, 'last-week')
@@ -75,11 +83,11 @@ const sortedVersions = computed(() => {
     .slice(0, 20)
 })
 
-// Sort dependencies alphabetically
-const sortedDependencies = computed(() => {
-  if (!displayVersion.value?.dependencies) return []
-  return Object.entries(displayVersion.value.dependencies)
-    .sort(([a], [b]) => a.localeCompare(b))
+const hasDependencies = computed(() => {
+  if (!displayVersion.value) return false
+  const deps = displayVersion.value.dependencies
+  const peerDeps = displayVersion.value.peerDependencies
+  return (deps && Object.keys(deps).length > 0) || (peerDeps && Object.keys(peerDeps).length > 0)
 })
 
 const repositoryUrl = computed(() => {
@@ -185,9 +193,6 @@ const descriptionExpanded = ref(false)
 const descriptionRef = ref<HTMLDivElement>()
 const descriptionOverflows = ref(false)
 
-// Expandable dependencies
-const depsExpanded = ref(false)
-
 // Check if description overflows on mount/update
 function checkDescriptionOverflow() {
   if (descriptionRef.value) {
@@ -235,7 +240,11 @@ defineOgImageComponent('Package', {
           <!-- Package name and version -->
           <div class="flex items-center gap-3 mb-2 flex-wrap">
             <h1 class="font-mono text-2xl sm:text-3xl font-medium">
-              {{ pkg.name }}
+              <NuxtLink
+                v-if="orgName"
+                :to="`/org/${orgName}`"
+                class="text-fg-muted hover:text-fg transition-colors duration-200"
+              >@{{ orgName }}</NuxtLink><span v-if="orgName">/</span>{{ orgName ? pkg.name.replace(`@${orgName}/`, '') : pkg.name }}
             </h1>
             <a
               v-if="displayVersion"
@@ -659,54 +668,13 @@ defineOgImageComponent('Package', {
           </section>
 
           <!-- Dependencies -->
-          <section
-            v-if="sortedDependencies.length > 0"
-            aria-labelledby="dependencies-heading"
-          >
-            <div class="flex items-center justify-between mb-3">
-              <h2
-                id="dependencies-heading"
-                class="text-xs text-fg-subtle uppercase tracking-wider"
-              >
-                Dependencies ({{ sortedDependencies.length }})
-              </h2>
-              <a
-                :href="`https://npmgraph.js.org/?q=${pkg.name}`"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="link-subtle text-fg-subtle"
-                aria-label="View dependency graph"
-                title="View dependency graph"
-              >
-                <span class="text-xs uppercase tracking-wider">
-                  Graph
-                </span>
-              </a>
-            </div>
-            <ul class="space-y-1 list-none m-0 p-0">
-              <li
-                v-for="[dep, version] in sortedDependencies.slice(0, depsExpanded ? undefined : 10)"
-                :key="dep"
-                class="flex items-center justify-between py-1 text-sm"
-              >
-                <NuxtLink
-                  :to="`/package/${dep}`"
-                  class="font-mono text-fg-muted hover:text-fg transition-colors duration-200 truncate mr-2"
-                >
-                  {{ dep }}
-                </NuxtLink>
-                <span class="font-mono text-xs text-fg-subtle shrink-0">{{ version }}</span>
-              </li>
-            </ul>
-            <button
-              v-if="sortedDependencies.length > 10 && !depsExpanded"
-              type="button"
-              class="mt-2 font-mono text-xs text-fg-muted hover:text-fg transition-colors duration-200"
-              @click="depsExpanded = true"
-            >
-              show all {{ sortedDependencies.length }} deps
-            </button>
-          </section>
+          <PackageDependencies
+            v-if="hasDependencies"
+            :package-name="pkg.name"
+            :dependencies="displayVersion?.dependencies"
+            :peer-dependencies="displayVersion?.peerDependencies"
+            :peer-dependencies-meta="displayVersion?.peerDependenciesMeta"
+          />
         </aside>
       </div>
     </article>
