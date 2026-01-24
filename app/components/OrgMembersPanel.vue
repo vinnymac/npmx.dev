@@ -110,6 +110,12 @@ const roleCounts = computed(() => {
   return counts
 })
 
+// Refresh all data
+function refreshData() {
+  loadMembers()
+  loadTeamMemberships()
+}
+
 // Load members
 async function loadMembers() {
   if (!isConnected.value) return
@@ -296,10 +302,7 @@ watch(lastExecutionTime, () => {
         class="p-1.5 text-fg-muted hover:text-fg transition-colors duration-200 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fg/50"
         aria-label="Refresh members"
         :disabled="isLoading"
-        @click="
-          loadMembers()
-          loadTeamMemberships()
-        "
+        @click="refreshData"
       >
         <span
           class="i-carbon-renew block w-4 h-4"
