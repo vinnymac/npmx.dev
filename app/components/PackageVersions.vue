@@ -242,6 +242,7 @@ async function expandTagRow(tag: string) {
       const allVersions = await loadAllVersions()
       processLoadedVersions(allVersions)
     } catch (error) {
+      // oxlint-disable-next-line no-console -- error logging
       console.error('Failed to load versions:', error)
     } finally {
       loadingTags.value.delete(tag)
@@ -266,6 +267,7 @@ async function expandOtherVersions() {
       const allVersions = await loadAllVersions()
       processLoadedVersions(allVersions)
     } catch (error) {
+      // oxlint-disable-next-line no-console -- error logging
       console.error('Failed to load versions:', error)
     } finally {
       otherVersionsLoading.value = false

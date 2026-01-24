@@ -50,11 +50,13 @@ const main = defineCommand({
 
     if (!npmUser) {
       logWarning('Not logged in to npm. Starting npm login...')
-      console.log() // Add spacing before npm login prompt
+      // oxlint-disable-next-line no-console -- deliberate spacing
+      console.log()
 
       const loginSuccess = await runNpmLogin()
 
-      console.log() // Add spacing after npm login
+      // oxlint-disable-next-line no-console -- deliberate spacing
+      console.log()
 
       if (!loginSuccess) {
         logWarning('npm login failed or was cancelled.')
