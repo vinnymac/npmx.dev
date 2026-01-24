@@ -1,8 +1,5 @@
-import type { Packument } from '#shared/types'
-import Arborist from '@npmcli/arborist'
-import { tmpdir } from 'node:os'
-import { join } from 'node:path'
-import { mkdir, rm, writeFile } from 'node:fs/promises'
+import type { Packument, PackumentVersion } from '#shared/types'
+import { maxSatisfying } from 'semver'
 
 /**
  * Result of install size calculation
@@ -31,152 +28,236 @@ export interface DependencySize {
 }
 
 /**
- * Cached function to fetch unpacked size for a specific package version
+ * We resolve for linux-x64 with glibc
  */
-export const fetchPackageSize = defineCachedFunction(
-  async (name: string, version: string): Promise<number> => {
+const TARGET_PLATFORM = {
+  os: 'linux',
+  cpu: 'x64',
+  libc: 'glibc',
+}
+
+const fetchPackument = defineCachedFunction(
+  async (name: string): Promise<Packument | null> => {
     try {
       const encodedName = name.startsWith('@')
         ? `@${encodeURIComponent(name.slice(1))}`
         : encodeURIComponent(name)
 
-      const packument = await $fetch<Packument>(`https://registry.npmjs.org/${encodedName}`)
-
-      const versionData = packument.versions[version]
-      if (!versionData?.dist) {
-        return 0
-      }
-
-      // dist.unpackedSize may not be present on older packages
-      return (versionData.dist as { unpackedSize?: number }).unpackedSize ?? 0
+      return await $fetch<Packument>(`https://registry.npmjs.org/${encodedName}`)
     } catch {
-      return 0
+      return null
     }
   },
   {
-    // Cache for 24 hours - sizes don't change for published versions
-    maxAge: 60 * 60 * 24,
-    name: 'package-size',
-    getKey: (name: string, version: string) => `${name}@${version}`,
+    maxAge: 60 * 60, // 1 hour
+    name: 'packument',
+    getKey: (name: string) => name,
   },
 )
 
 /**
+ * Check if a package version matches the target platform.
+ * Returns false if the package explicitly excludes our target platform.
+ */
+function matchesPlatform(version: PackumentVersion): boolean {
+  // Check OS compatibility
+  if (version.os && Array.isArray(version.os) && version.os.length > 0) {
+    const osMatch = version.os.some(os => {
+      if (os.startsWith('!')) {
+        return os.slice(1) !== TARGET_PLATFORM.os
+      }
+      return os === TARGET_PLATFORM.os
+    })
+    if (!osMatch) return false
+  }
+
+  // Check CPU compatibility
+  if (version.cpu && Array.isArray(version.cpu) && version.cpu.length > 0) {
+    const cpuMatch = version.cpu.some(cpu => {
+      if (cpu.startsWith('!')) {
+        return cpu.slice(1) !== TARGET_PLATFORM.cpu
+      }
+      return cpu === TARGET_PLATFORM.cpu
+    })
+    if (!cpuMatch) return false
+  }
+
+  // Check libc compatibility (if specified)
+  const libc = (version as { libc?: string[] }).libc
+  if (libc && Array.isArray(libc) && libc.length > 0) {
+    const libcMatch = libc.some(l => {
+      if (l.startsWith('!')) {
+        return l.slice(1) !== TARGET_PLATFORM.libc
+      }
+      return l === TARGET_PLATFORM.libc
+    })
+    if (!libcMatch) return false
+  }
+
+  return true
+}
+
+/**
+ * Resolve a semver range to a specific version from available versions.
+ */
+function resolveVersion(range: string, versions: string[]): string | null {
+  // Handle exact versions, tags, URLs, etc.
+  if (versions.includes(range)) {
+    return range
+  }
+
+  // Handle npm: protocol (aliases)
+  if (range.startsWith('npm:')) {
+    // npm:package@version - extract the version part
+    const atIndex = range.lastIndexOf('@')
+    if (atIndex > 4) {
+      // After 'npm:'
+      const aliasedRange = range.slice(atIndex + 1)
+      return resolveVersion(aliasedRange, versions)
+    }
+    return null
+  }
+
+  // Handle URLs, git refs, etc. - we can't resolve these
+  if (
+    range.startsWith('http://') ||
+    range.startsWith('https://') ||
+    range.startsWith('git://') ||
+    range.startsWith('git+') ||
+    range.startsWith('file:') ||
+    range.includes('/')
+  ) {
+    return null
+  }
+
+  return maxSatisfying(versions, range)
+}
+
+interface ResolvedDep {
+  name: string
+  version: string
+  size: number
+  optional: boolean
+}
+
+/**
+ * Recursively resolve dependencies for a package.
+ * Uses a breadth-first approach with deduplication.
+ */
+async function resolveDependencyTree(
+  rootName: string,
+  rootVersion: string,
+): Promise<Map<string, ResolvedDep>> {
+  const resolved = new Map<string, ResolvedDep>()
+  const queue: Array<{
+    name: string
+    range: string
+    optional: boolean
+  }> = [{ name: rootName, range: rootVersion, optional: false }]
+  const seen = new Set<string>()
+
+  while (queue.length > 0) {
+    // Process in batches for better parallelism
+    const batch = queue.splice(0, Math.min(20, queue.length))
+
+    await Promise.all(
+      batch.map(async ({ name, range, optional }) => {
+        // Skip if we've already resolved this package
+        // (deduplication - use the first version we encounter)
+        if (seen.has(name)) return
+        seen.add(name)
+
+        const packument = await fetchPackument(name)
+        if (!packument) return
+
+        const versions = Object.keys(packument.versions)
+        const version = resolveVersion(range, versions)
+        if (!version) return
+
+        const versionData = packument.versions[version]
+        if (!versionData) return
+
+        // Skip if this package doesn't match our target platform
+        if (!matchesPlatform(versionData)) return
+
+        // Get unpacked size
+        const size = (versionData.dist as { unpackedSize?: number })?.unpackedSize ?? 0
+
+        const key = `${name}@${version}`
+        if (!resolved.has(key)) {
+          resolved.set(key, { name, version, size, optional })
+        }
+
+        // Queue regular dependencies
+        if (versionData.dependencies) {
+          for (const [depName, depRange] of Object.entries(versionData.dependencies)) {
+            if (!seen.has(depName)) {
+              queue.push({ name: depName, range: depRange, optional: false })
+            }
+          }
+        }
+
+        // Queue optional dependencies (but mark them as optional)
+        // Only include if they match our platform
+        if (versionData.optionalDependencies) {
+          for (const [depName, depRange] of Object.entries(versionData.optionalDependencies)) {
+            if (!seen.has(depName)) {
+              queue.push({ name: depName, range: depRange, optional: true })
+            }
+          }
+        }
+      }),
+    )
+  }
+
+  return resolved
+}
+
+/**
  * Calculate the total install size for a package.
  *
- * We resolve dependencies for a specific platform (linux-x64) so that
- * arborist naturally selects only the appropriate platform-specific
- * optional dependencies, just like a real install would.
+ * Resolves dependencies by fetching packuments directly from the npm registry.
+ * No filesystem operations - safe for serverless environments.
+ *
+ * Dependencies are resolved for linux-x64-glibc as a representative platform.
  */
 export const calculateInstallSize = defineCachedFunction(
   async (name: string, version: string): Promise<InstallSizeResult> => {
-    // Create a temporary directory for arborist to work in
-    const tempDir = join(
-      tmpdir(),
-      `npmx-arborist-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-    )
+    const resolved = await resolveDependencyTree(name, version)
 
-    try {
-      await mkdir(tempDir, { recursive: true })
+    // Separate self from dependencies
+    const selfKey = `${name}@${version}`
+    const selfEntry = resolved.get(selfKey)
+    const selfSize = selfEntry?.size ?? 0
 
-      // Create a minimal package.json with the target as a dependency
-      const packageJson = {
-        name: 'temp-size-calc',
-        version: '1.0.0',
-        dependencies: {
-          [name]: version,
-        },
-      }
-      await writeFile(join(tempDir, 'package.json'), JSON.stringify(packageJson))
+    // Build dependencies list (excluding self)
+    const dependencies: DependencySize[] = []
+    let totalSize = selfSize
+    let dependencyCount = 0
 
-      // Use arborist to build the ideal tree, pretending we're on linux-x64
-      // This ensures we only get one platform-specific binary per package,
-      // just like a real install would
-      const arb = new Arborist({
-        path: tempDir,
-        registry: 'https://registry.npmjs.org',
-        ignoreScripts: true,
-        // Resolve for linux-x64 with glibc - a common CI/server environment
-        os: 'linux',
-        cpu: 'x64',
-        libc: 'glibc',
-      } as Arborist.Options)
+    for (const [key, dep] of resolved) {
+      if (key === selfKey) continue
 
-      const tree = await arb.buildIdealTree()
-
-      // Collect all dependencies from the tree
-      const deps: Map<string, { name: string; version: string; optional: boolean }> = new Map()
-
-      // Walk the tree using the inventory
-      for (const node of tree.inventory.values()) {
-        // Skip the root package (location is empty string for root)
-        // Also skip if the path is the temp directory itself
-        if (node.isRoot || node.location === '' || node.path === tempDir) continue
-
-        // Skip inert nodes - these are optional deps that don't match the platform
-        // (arborist marks them inert based on os/cpu/libc options)
-        if ((node as unknown as { inert?: boolean }).inert) continue
-
-        const pkgName = node.name
-        const pkgVersion = node.version
-        if (!pkgVersion) continue
-
-        const key = `${pkgName}@${pkgVersion}`
-        if (deps.has(key)) continue
-
-        const isOptional = node.optional || node.devOptional
-        deps.set(key, { name: pkgName, version: pkgVersion, optional: isOptional })
-      }
-
-      // Fetch sizes for all dependencies in parallel
-      const sizePromises = Array.from(deps.values()).map(async dep => {
-        const size = await fetchPackageSize(dep.name, dep.version)
-        return {
-          name: dep.name,
-          version: dep.version,
-          size,
-          optional: dep.optional || undefined,
-        } satisfies DependencySize
+      dependencies.push({
+        name: dep.name,
+        version: dep.version,
+        size: dep.size,
+        optional: dep.optional || undefined,
       })
+      totalSize += dep.size
+      dependencyCount++
+    }
 
-      const dependencies = await Promise.all(sizePromises)
+    // Sort by size descending
+    dependencies.sort((a, b) => b.size - a.size)
 
-      // Calculate totals
-      let totalSize = 0
-      let dependencyCount = 0
-      const finalDependencies: DependencySize[] = []
-
-      // Get self size (the main package)
-      const selfSize = await fetchPackageSize(name, version)
-      totalSize += selfSize
-
-      for (const dep of dependencies) {
-        // Skip the main package itself from dependencies list
-        if (dep.name === name && dep.version === version) continue
-
-        totalSize += dep.size
-        dependencyCount += 1
-        finalDependencies.push(dep)
-      }
-
-      // Sort dependencies by size descending
-      finalDependencies.sort((a, b) => b.size - a.size)
-
-      return {
-        package: name,
-        version,
-        selfSize,
-        totalSize,
-        dependencyCount,
-        dependencies: finalDependencies,
-      }
-    } finally {
-      // Clean up temp directory
-      try {
-        await rm(tempDir, { recursive: true, force: true })
-      } catch {
-        // Ignore cleanup errors
-      }
+    return {
+      package: name,
+      version,
+      selfSize,
+      totalSize,
+      dependencyCount,
+      dependencies,
     }
   },
   {

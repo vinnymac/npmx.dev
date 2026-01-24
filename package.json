@@ -28,7 +28,6 @@
   "dependencies": {
     "@iconify-json/simple-icons": "^1.2.67",
     "@iconify-json/vscode-icons": "^1.2.40",
-    "@npmcli/arborist": "^9.1.10",
     "@nuxt/fonts": "^0.13.0",
     "@nuxt/scripts": "^0.13.2",
     "@nuxtjs/html-validator": "^2.1.0",
@@ -54,7 +53,6 @@
     "@npm/types": "^2.1.0",
     "@nuxt/test-utils": "https://pkg.pr.new/@nuxt/test-utils@1499a48",
     "@playwright/test": "1.57.0",
-    "@types/npmcli__arborist": "^6.3.2",
     "@types/sanitize-html": "^2.16.0",
     "@types/semver": "^7.7.1",
     "@types/validate-npm-package-name": "^4.0.2",
