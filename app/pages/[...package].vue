@@ -431,7 +431,7 @@ defineOgImageComponent('Package', {
                 rel="noopener noreferrer"
                 class="link-subtle font-mono text-sm inline-flex items-center gap-1.5"
               >
-                <span class="i-simple-icons-socketdotio w-4 h-4" />
+                <span class="i-simple-icons-socket w-4 h-4" />
                 socket.dev
               </a>
             </li>
