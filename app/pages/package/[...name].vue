@@ -42,6 +42,7 @@ const orgName = computed(() => {
 const { data: pkg, status, error } = usePackage(packageName, requestedVersion)
 
 const { data: downloads } = usePackageDownloads(packageName, 'last-week')
+const { data: weeklyDownloads } = usePackageWeeklyDownloadEvolution(packageName, { weeks: 52 })
 
 // Fetch README for specific version if requested, otherwise latest
 const { data: readmeData } = useLazyFetch<{ html: string }>(
@@ -565,6 +566,9 @@ defineOgImageComponent('Package', {
               </li>
             </ul>
           </section>
+
+          <!-- Donwload stats -->
+          <PackageDownloadStats :downloads="weeklyDownloads" />
 
           <section
             v-if="
