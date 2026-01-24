@@ -120,10 +120,14 @@ function transformPackument(pkg: Packument, requestedVersion?: string | null): S
   }
 }
 
-export function usePackage(name: MaybeRefOrGetter<string>, requestedVersion?: MaybeRefOrGetter<string | null>) {
+export function usePackage(
+  name: MaybeRefOrGetter<string>,
+  requestedVersion?: MaybeRefOrGetter<string | null>,
+) {
   return useLazyAsyncData(
     () => `package:${toValue(name)}:${toValue(requestedVersion) ?? ''}`,
-    () => fetchNpmPackage(toValue(name)).then(r => transformPackument(r, toValue(requestedVersion))),
+    () =>
+      fetchNpmPackage(toValue(name)).then(r => transformPackument(r, toValue(requestedVersion))),
   )
 }
 
@@ -137,7 +141,11 @@ export function usePackageDownloads(
   )
 }
 
-const emptySearchResponse = { objects: [], total: 0, time: new Date().toISOString() } satisfies NpmSearchResponse
+const emptySearchResponse = {
+  objects: [],
+  total: 0,
+  time: new Date().toISOString(),
+} satisfies NpmSearchResponse
 
 export function useNpmSearch(
   query: MaybeRefOrGetter<string>,
@@ -155,7 +163,7 @@ export function useNpmSearch(
       if (!q.trim()) {
         return Promise.resolve(emptySearchResponse)
       }
-      return lastSearch = await searchNpmPackages(q, toValue(options))
+      return (lastSearch = await searchNpmPackages(q, toValue(options)))
     },
     { default: () => lastSearch || emptySearchResponse },
   )

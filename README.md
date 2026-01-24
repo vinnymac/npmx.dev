@@ -31,14 +31,14 @@ The aim of [npmx.dev](https://npmx.dev) is to provide a better browser for the n
 
 npmx.dev supports npm permalink patterns:
 
-| Pattern | Example |
-|---------|---------|
-| `/package/<name>` | [`/package/nuxt`](https://npmx.dev/package/nuxt) |
-| `/package/@scope/name` | [`/package/@nuxt/kit`](https://npmx.dev/package/@nuxt/kit) |
+| Pattern                       | Example                                                        |
+| ----------------------------- | -------------------------------------------------------------- |
+| `/package/<name>`             | [`/package/nuxt`](https://npmx.dev/package/nuxt)               |
+| `/package/@scope/name`        | [`/package/@nuxt/kit`](https://npmx.dev/package/@nuxt/kit)     |
 | `/package/<name>/v/<version>` | [`/package/vue/v/3.4.0`](https://npmx.dev/package/vue/v/3.4.0) |
-| `/search?q=<query>` | [`/search?q=vue`](https://npmx.dev/search?q=vue) |
-| `/~<username>` | [`/~sindresorhus`](https://npmx.dev/~sindresorhus) |
-| `/org/<name>` | [`/org/nuxt`](https://npmx.dev/org/nuxt) |
+| `/search?q=<query>`           | [`/search?q=vue`](https://npmx.dev/search?q=vue)               |
+| `/~<username>`                | [`/~sindresorhus`](https://npmx.dev/~sindresorhus)             |
+| `/org/<name>`                 | [`/org/nuxt`](https://npmx.dev/org/nuxt)                       |
 
 ## Tech stack
 

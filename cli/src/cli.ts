@@ -10,13 +10,13 @@ import { initLogger, showToken, logInfo, logWarning } from './logger.ts'
 const DEFAULT_PORT = 31415
 
 async function runNpmLogin(): Promise<boolean> {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     const child = spawn('npm', ['login'], {
       stdio: 'inherit',
       shell: true,
     })
 
-    child.on('close', (code) => {
+    child.on('close', code => {
       resolve(code === 0)
     })
 
