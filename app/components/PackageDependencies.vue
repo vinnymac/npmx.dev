@@ -4,11 +4,13 @@ const props = defineProps<{
   dependencies?: Record<string, string>
   peerDependencies?: Record<string, string>
   peerDependenciesMeta?: Record<string, { optional?: boolean }>
+  optionalDependencies?: Record<string, string>
 }>()
 
 // Expanded state for each section
 const depsExpanded = ref(false)
 const peerDepsExpanded = ref(false)
+const optionalDepsExpanded = ref(false)
 
 // Sort dependencies alphabetically
 const sortedDependencies = computed(() => {
@@ -31,6 +33,12 @@ const sortedPeerDependencies = computed(() => {
       if (a.optional !== b.optional) return a.optional ? 1 : -1
       return a.name.localeCompare(b.name)
     })
+})
+
+// Sort optional dependencies alphabetically
+const sortedOptionalDependencies = computed(() => {
+  if (!props.optionalDependencies) return []
+  return Object.entries(props.optionalDependencies).sort(([a], [b]) => a.localeCompare(b))
 })
 </script>
 
@@ -115,6 +123,50 @@ const sortedPeerDependencies = computed(() => {
         @click="peerDepsExpanded = true"
       >
         show all {{ sortedPeerDependencies.length }} peer deps
+      </button>
+    </section>
+
+    <!-- Optional Dependencies -->
+    <section
+      v-if="sortedOptionalDependencies.length > 0"
+      aria-labelledby="optional-dependencies-heading"
+    >
+      <h2
+        id="optional-dependencies-heading"
+        class="text-xs text-fg-subtle uppercase tracking-wider mb-3"
+      >
+        Optional Dependencies ({{ sortedOptionalDependencies.length }})
+      </h2>
+      <ul class="space-y-1 list-none m-0 p-0" aria-label="Package optional dependencies">
+        <li
+          v-for="[dep, version] in sortedOptionalDependencies.slice(
+            0,
+            optionalDepsExpanded ? undefined : 10,
+          )"
+          :key="dep"
+          class="flex items-center justify-between py-1 text-sm gap-2"
+        >
+          <NuxtLink
+            :to="{ name: 'package', params: { package: dep.split('/') } }"
+            class="font-mono text-fg-muted hover:text-fg transition-colors duration-200 truncate min-w-0"
+          >
+            {{ dep }}
+          </NuxtLink>
+          <span
+            class="font-mono text-xs text-fg-subtle max-w-[50%] text-right truncate"
+            :title="version"
+          >
+            {{ version }}
+          </span>
+        </li>
+      </ul>
+      <button
+        v-if="sortedOptionalDependencies.length > 10 && !optionalDepsExpanded"
+        type="button"
+        class="mt-2 font-mono text-xs text-fg-muted hover:text-fg transition-colors duration-200 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fg/50"
+        @click="optionalDepsExpanded = true"
+      >
+        show all {{ sortedOptionalDependencies.length }} optional deps
       </button>
     </section>
   </div>

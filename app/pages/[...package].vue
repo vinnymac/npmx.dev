@@ -67,6 +67,37 @@ const { data: jsrInfo } = useLazyFetch<JsrPackageInfo>(() => `/api/jsr/${package
   immediate: computed(() => packageName.value.startsWith('@')).value,
 })
 
+// Fetch total install size (lazy, can be slow for large dependency trees)
+interface InstallSizeResult {
+  package: string
+  version: string
+  selfSize: number
+  totalSize: number
+  dependencyCount: number
+}
+const { data: installSize, status: installSizeStatus } = useLazyFetch<InstallSizeResult | null>(
+  () => {
+    const base = `/api/registry/install-size/${packageName.value}`
+    const version = requestedVersion.value
+    return version ? `${base}/v/${version}` : base
+  },
+  {
+    server: false,
+  },
+)
+
+const sizeTooltip = computed(() => {
+  const chunks = [
+    displayVersion.value &&
+      displayVersion.value.dist.unpackedSize &&
+      `${formatBytes(displayVersion.value.dist.unpackedSize)} unpacked size (this package)`,
+    installSize.value &&
+      installSize.value.dependencyCount &&
+      `${formatBytes(installSize.value.totalSize)} total unpacked size (including all ${installSize.value.dependencyCount} dependencies for linux-x64)`,
+  ]
+  return chunks.filter(Boolean).join('\n')
+})
+
 // Get the version to display (requested or latest)
 const displayVersion = computed(() => {
   if (!pkg.value) return null
@@ -93,7 +124,12 @@ const hasDependencies = computed(() => {
   if (!displayVersion.value) return false
   const deps = displayVersion.value.dependencies
   const peerDeps = displayVersion.value.peerDependencies
-  return (deps && Object.keys(deps).length > 0) || (peerDeps && Object.keys(peerDeps).length > 0)
+  const optionalDeps = displayVersion.value.optionalDependencies
+  return (
+    (deps && Object.keys(deps).length > 0) ||
+    (peerDeps && Object.keys(peerDeps).length > 0) ||
+    (optionalDeps && Object.keys(optionalDeps).length > 0)
+  )
 })
 
 const repositoryUrl = computed(() => {
@@ -353,23 +389,6 @@ defineOgImageComponent('Package', {
             </dd>
           </div>
 
-          <div v-if="displayVersion?.dist?.unpackedSize" class="space-y-1">
-            <dt class="text-xs text-fg-subtle uppercase tracking-wider">Size</dt>
-            <dd class="font-mono text-sm text-fg flex items-baseline justify-start gap-2">
-              {{ formatBytes(displayVersion.dist.unpackedSize) }}
-              <a
-                :href="`https://pkg-size.dev/${pkg.name}`"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="text-fg-subtle hover:text-fg transition-colors duration-200"
-                title="View bundle size analysis"
-              >
-                <span class="i-carbon-launch w-3.5 h-3.5 inline-block" aria-hidden="true" />
-                <span class="sr-only">View bundle size analysis</span>
-              </a>
-            </dd>
-          </div>
-
           <div v-if="getDependencyCount(displayVersion) > 0" class="space-y-1">
             <dt class="text-xs text-fg-subtle uppercase tracking-wider">Deps</dt>
             <dd class="font-mono text-sm text-fg flex items-baseline justify-start gap-2">
@@ -387,7 +406,41 @@ defineOgImageComponent('Package', {
             </dd>
           </div>
 
-          <div v-if="pkg.time?.modified" class="space-y-1 col-span-2">
+          <div class="space-y-1 col-span-2">
+            <dt class="text-xs text-fg-subtle uppercase tracking-wider flex items-center gap-1">
+              Install Size
+              <span
+                class="i-carbon-information w-3 h-3 text-fg-subtle"
+                aria-hidden="true"
+                :title="sizeTooltip"
+              />
+            </dt>
+            <dd class="font-mono text-sm text-fg">
+              <!-- Package size (greyed out) -->
+              <span class="text-fg-muted">
+                <span v-if="displayVersion?.dist?.unpackedSize">
+                  {{ formatBytes(displayVersion.dist.unpackedSize) }}
+                </span>
+                <span v-else>-</span>
+              </span>
+
+              <!-- Separator and install size -->
+              <span class="text-fg-subtle mx-1">/</span>
+
+              <span
+                v-if="installSizeStatus === 'pending'"
+                class="inline-flex items-center gap-1 text-fg-subtle"
+              >
+                <span class="i-carbon-circle-dash w-3 h-3 animate-spin" aria-hidden="true" />
+              </span>
+              <span v-else-if="installSize?.totalSize">
+                {{ formatBytes(installSize.totalSize) }}
+              </span>
+              <span v-else class="text-fg-subtle">-</span>
+            </dd>
+          </div>
+
+          <div v-if="pkg.time?.modified" class="space-y-1">
             <dt class="text-xs text-fg-subtle uppercase tracking-wider">Updated</dt>
             <dd class="font-mono text-sm text-fg">
               <time :datetime="pkg.time.modified">{{ formatDate(pkg.time.modified) }}</time>
@@ -664,6 +717,7 @@ defineOgImageComponent('Package', {
             :dependencies="displayVersion?.dependencies"
             :peer-dependencies="displayVersion?.peerDependencies"
             :peer-dependencies-meta="displayVersion?.peerDependenciesMeta"
+            :optional-dependencies="displayVersion?.optionalDependencies"
           />
         </aside>
       </div>
