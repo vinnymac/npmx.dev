@@ -14,16 +14,16 @@
     "lint": "oxlint && oxfmt --check .",
     "lint:fix": "oxlint --fix && oxfmt .",
     "generate": "nuxt generate",
+    "npmx-connector": "pnpm --filter npmx-connector dev",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare && simple-git-hooks",
-    "test:types": "nuxt prepare && vue-tsc -b --noEmit",
     "test": "vitest",
-    "test:coverage": "vitest --coverage",
-    "test:unit": "vitest --project unit",
-    "test:nuxt": "vitest --project nuxt",
     "test:browser": "playwright test",
     "test:browser:ui": "playwright test --ui",
-    "test:browser:update": "playwright test --update-snapshots"
+    "test:browser:update": "playwright test --update-snapshots",
+    "test:nuxt": "vitest --project nuxt",
+    "test:types": "nuxt prepare && vue-tsc -b --noEmit && pnpm --filter npmx-connector test:types",
+    "test:unit": "vitest --project unit"
   },
   "dependencies": {
     "@iconify-json/vscode-icons": "^1.2.40",

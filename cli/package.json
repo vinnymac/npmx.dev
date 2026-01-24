@@ -1,5 +1,5 @@
 {
-  "name": "@npmx/connector",
+  "name": "npmx-connector",
   "version": "0.0.1",
   "description": "Local connector for npmx.dev - enables authenticated npm operations from the web UI",
   "license": "MIT",

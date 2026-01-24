@@ -90,12 +90,8 @@ pnpm test:types
 The `cli/` workspace contains a local connector that enables authenticated npm operations from the web UI. It runs on your machine and uses your existing npm credentials.
 
 ```bash
-# run the connector in dev mode
-pnpm --filter @npmx/connector dev
-
-# or build and run the production version
-pnpm --filter @npmx/connector build
-node cli/dist/cli.mjs
+# run the connector from the root of the repository
+pnpm npmx-connector
 ```
 
 The connector will check your npm authentication, generate a connection token, and listen for requests from npmx.dev.
