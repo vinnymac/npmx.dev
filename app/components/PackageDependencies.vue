@@ -38,21 +38,9 @@ const sortedPeerDependencies = computed(() => {
   <div class="space-y-8">
     <!-- Dependencies -->
     <section v-if="sortedDependencies.length > 0" aria-labelledby="dependencies-heading">
-      <div class="flex items-center justify-between mb-3">
-        <h2 id="dependencies-heading" class="text-xs text-fg-subtle uppercase tracking-wider">
-          Dependencies ({{ sortedDependencies.length }})
-        </h2>
-        <a
-          :href="`https://npmgraph.js.org/?q=${packageName}`"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="link-subtle text-fg-subtle"
-          aria-label="View dependency graph"
-          title="View dependency graph"
-        >
-          <span class="text-xs uppercase tracking-wider"> Graph </span>
-        </a>
-      </div>
+      <h2 id="dependencies-heading" class="text-xs text-fg-subtle uppercase tracking-wider mb-3">
+        Dependencies ({{ sortedDependencies.length }})
+      </h2>
       <ul class="space-y-1 list-none m-0 p-0" aria-label="Package dependencies">
         <li
           v-for="[dep, version] in sortedDependencies.slice(0, depsExpanded ? undefined : 10)"

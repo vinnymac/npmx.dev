@@ -338,22 +338,52 @@ defineOgImageComponent('Package', {
 
           <div v-if="downloads" class="space-y-1">
             <dt class="text-xs text-fg-subtle uppercase tracking-wider">Weekly</dt>
-            <dd class="font-mono text-sm text-fg">
+            <dd class="font-mono text-sm text-fg flex items-baseline justify-start gap-2">
               {{ formatNumber(downloads.downloads) }}
+              <a
+                :href="`https://npm.chart.dev/${pkg.name}`"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-fg-subtle hover:text-fg transition-colors duration-200"
+                title="View download trends"
+              >
+                <span class="i-carbon-chart-line w-3.5 h-3.5 inline-block" aria-hidden="true" />
+                <span class="sr-only">View download trends</span>
+              </a>
             </dd>
           </div>
 
           <div v-if="displayVersion?.dist?.unpackedSize" class="space-y-1">
             <dt class="text-xs text-fg-subtle uppercase tracking-wider">Size</dt>
-            <dd class="font-mono text-sm text-fg">
+            <dd class="font-mono text-sm text-fg flex items-baseline justify-start gap-2">
               {{ formatBytes(displayVersion.dist.unpackedSize) }}
+              <a
+                :href="`https://pkg-size.dev/${pkg.name}`"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-fg-subtle hover:text-fg transition-colors duration-200"
+                title="View bundle size analysis"
+              >
+                <span class="i-carbon-launch w-3.5 h-3.5 inline-block" aria-hidden="true" />
+                <span class="sr-only">View bundle size analysis</span>
+              </a>
             </dd>
           </div>
 
           <div v-if="getDependencyCount(displayVersion) > 0" class="space-y-1">
             <dt class="text-xs text-fg-subtle uppercase tracking-wider">Deps</dt>
-            <dd class="font-mono text-sm text-fg">
+            <dd class="font-mono text-sm text-fg flex items-baseline justify-start gap-2">
               {{ getDependencyCount(displayVersion) }}
+              <a
+                :href="`https://npmgraph.js.org/?q=${pkg.name}`"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-fg-subtle hover:text-fg transition-colors duration-200"
+                title="View dependency graph"
+              >
+                <span class="i-carbon-network-3 w-3.5 h-3.5 inline-block" aria-hidden="true" />
+                <span class="sr-only">View dependency graph</span>
+              </a>
             </dd>
           </div>
 
@@ -435,28 +465,7 @@ defineOgImageComponent('Package', {
                 socket.dev
               </a>
             </li>
-            <li>
-              <a
-                :href="`https://npm.chart.dev/${pkg.name}`"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="link-subtle font-mono text-sm inline-flex items-center gap-1.5"
-              >
-                <span class="i-carbon-chart-line w-4 h-4" />
-                trends
-              </a>
-            </li>
-            <li>
-              <a
-                :href="`https://pkg-size.dev/${pkg.name}`"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="link-subtle font-mono text-sm inline-flex items-center gap-1.5"
-              >
-                <span class="i-carbon-data-volume w-4 h-4" />
-                size
-              </a>
-            </li>
+
             <li v-if="displayVersion">
               <NuxtLink
                 :to="{
