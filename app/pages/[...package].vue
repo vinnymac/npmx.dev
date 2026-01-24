@@ -156,14 +156,6 @@ function normalizeGitUrl(url: string): string {
     .replace(/^git@github\.com:/, 'https://github.com/')
 }
 
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  })
-}
-
 function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} kB`
@@ -354,7 +346,7 @@ defineOgImageComponent('Package', {
             >
               <button
                 type="button"
-                class="font-mono text-xs text-fg-muted hover:text-fg bg-bg px-1 transition-colors duration-200"
+                class="font-mono text-xs text-fg-muted hover:text-fg bg-bg px-1 transition-colors duration-200 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fg/50"
                 @click="descriptionExpanded = true"
               >
                 show more
@@ -431,7 +423,10 @@ defineOgImageComponent('Package', {
                 v-if="installSizeStatus === 'pending'"
                 class="inline-flex items-center gap-1 text-fg-subtle"
               >
-                <span class="i-carbon-circle-dash w-3 h-3 animate-spin" aria-hidden="true" />
+                <span
+                  class="i-carbon-circle-dash w-3 h-3 animate-spin motion-reduce:animate-none"
+                  aria-hidden="true"
+                />
               </span>
               <span v-else-if="installSize?.totalSize">
                 {{ formatBytes(installSize.totalSize) }}
@@ -443,7 +438,7 @@ defineOgImageComponent('Package', {
           <div v-if="pkg.time?.modified" class="space-y-1">
             <dt class="text-xs text-fg-subtle uppercase tracking-wider">Updated</dt>
             <dd class="font-mono text-sm text-fg">
-              <time :datetime="pkg.time.modified">{{ formatDate(pkg.time.modified) }}</time>
+              <NuxtTime :datetime="pkg.time.modified" date-style="medium" />
             </dd>
           </div>
         </dl>
@@ -458,7 +453,7 @@ defineOgImageComponent('Package', {
                 rel="noopener noreferrer"
                 class="link-subtle font-mono text-sm inline-flex items-center gap-1.5"
               >
-                <span class="i-carbon-logo-github w-4 h-4" />
+                <span class="i-carbon-logo-github w-4 h-4" aria-hidden="true" />
                 repo
               </a>
             </li>
@@ -469,7 +464,7 @@ defineOgImageComponent('Package', {
                 rel="noopener noreferrer"
                 class="link-subtle font-mono text-sm inline-flex items-center gap-1.5"
               >
-                <span class="i-carbon-link w-4 h-4" />
+                <span class="i-carbon-link w-4 h-4" aria-hidden="true" />
                 homepage
               </a>
             </li>
@@ -480,7 +475,7 @@ defineOgImageComponent('Package', {
                 rel="noopener noreferrer"
                 class="link-subtle font-mono text-sm inline-flex items-center gap-1.5"
               >
-                <span class="i-carbon-warning w-4 h-4" />
+                <span class="i-carbon-warning w-4 h-4" aria-hidden="true" />
                 issues
               </a>
             </li>
@@ -491,7 +486,7 @@ defineOgImageComponent('Package', {
                 rel="noopener noreferrer"
                 class="link-subtle font-mono text-sm inline-flex items-center gap-1.5"
               >
-                <span class="i-carbon-cube w-4 h-4" />
+                <span class="i-carbon-cube w-4 h-4" aria-hidden="true" />
                 npm
               </a>
             </li>
@@ -503,7 +498,7 @@ defineOgImageComponent('Package', {
                 class="link-subtle font-mono text-sm inline-flex items-center gap-1.5"
                 title="Also available on JSR"
               >
-                <span class="i-simple-icons-jsr w-4 h-4" />
+                <span class="i-simple-icons-jsr w-4 h-4" aria-hidden="true" />
                 jsr
               </a>
             </li>
@@ -514,7 +509,7 @@ defineOgImageComponent('Package', {
                 rel="noopener noreferrer"
                 class="link-subtle font-mono text-sm inline-flex items-center gap-1.5"
               >
-                <span class="i-simple-icons-socket w-4 h-4" />
+                <span class="i-simple-icons-socket w-4 h-4" aria-hidden="true" />
                 socket.dev
               </a>
             </li>
@@ -527,7 +522,7 @@ defineOgImageComponent('Package', {
                 }"
                 class="link-subtle font-mono text-sm inline-flex items-center gap-1.5"
               >
-                <span class="i-carbon-code w-4 h-4" />
+                <span class="i-carbon-code w-4 h-4" aria-hidden="true" />
                 code
               </NuxtLink>
             </li>
@@ -609,7 +604,7 @@ defineOgImageComponent('Package', {
             </div>
           </div>
           <button
-            class="absolute top-3 right-3 px-2 py-1 font-mono text-xs text-fg-muted bg-bg-subtle/80 border border-border rounded transition-all duration-200 hover:(text-fg border-border-hover) active:scale-95"
+            class="absolute top-3 right-3 px-2 py-1 font-mono text-xs text-fg-muted bg-bg-subtle/80 border border-border rounded transition-colors duration-200 hover:(text-fg border-border-hover) active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fg/50"
             @click="copyInstallCommand"
           >
             {{ copied ? 'copied!' : 'copy' }}
