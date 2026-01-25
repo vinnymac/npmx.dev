@@ -77,19 +77,17 @@ onUnmounted(() => {
     aria-label="Site footer"
     class="border-t border-border bg-bg/90 backdrop-blur-md"
     :class="[
-      // Only apply dynamic positioning classes after mount to avoid hydration mismatch
-      !isMounted
-        ? 'mt-auto'
-        : // When CSS scroll-state queries are supported, use CSS-only approach
-          supportsScrollStateQueries
-          ? 'footer-scroll-state'
-          : // Fallback to JS-controlled classes
-            isScrollable
-            ? [
-                'fixed bottom-0 left-0 right-0 z-40 transition-transform duration-300 ease-out',
-                isVisible ? 'translate-y-0' : 'translate-y-full',
-              ]
-            : 'mt-auto',
+      // When CSS scroll-state queries are supported, use CSS-only approach
+      supportsScrollStateQueries
+        ? 'footer-scroll-state'
+        : // JS-controlled: fixed position, hidden by default, transition only after mount
+          isScrollable
+          ? [
+              'fixed bottom-0 left-0 right-0 z-40 translate-y-full',
+              isMounted && 'transition-transform duration-300 ease-out',
+              isVisible && 'translate-y-0',
+            ]
+          : 'mt-auto',
     ]"
   >
     <div class="container py-2 sm:py-6 flex flex-col gap-1 sm:gap-3 text-fg-subtle text-sm">
