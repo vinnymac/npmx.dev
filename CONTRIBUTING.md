@@ -178,19 +178,19 @@ Make sure to read about [Playwright best practices](https://playwright.dev/docs/
 
 ### Before submitting
 
-1. Ensure your code follows the style guidelines
-2. Run linting: `pnpm lint:fix`
-3. Run type checking: `pnpm test:types`
-4. Run tests: `pnpm test`
-5. Write or update tests for your changes
+1. ensure your code follows the style guidelines
+2. run linting: `pnpm lint:fix`
+3. run type checking: `pnpm test:types`
+4. run tests: `pnpm test`
+5. write or update tests for your changes
 
 ### Pull request process
 
-1. Create a feature branch from `main`
-2. Make your changes with clear, descriptive commits
-3. Push your branch and open a pull request
-4. Ensure CI checks pass (lint, type check, tests)
-5. Request review from maintainers
+1. create a feature branch from `main`
+2. make your changes with clear, descriptive commits
+3. push your branch and open a pull request
+4. ensure CI checks pass (lint, type check, tests)
+5. request review from maintainers
 
 ### Commit messages
 
