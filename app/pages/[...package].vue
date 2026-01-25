@@ -164,6 +164,7 @@ const PROVIDER_ICONS: Record<string, string> = {
   gitea: 'i-simple-icons-gitea',
   gitee: 'i-simple-icons-gitee',
   sourcehut: 'i-simple-icons-sourcehut',
+  tangled: 'i-custom-tangled',
 }
 
 const repoProviderIcon = computed(() => {
