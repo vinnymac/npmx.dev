@@ -8,6 +8,7 @@ import {
   getPrereleaseChannel,
   parseVersion,
 } from '~/utils/versions'
+import { fetchAllPackageVersions } from '~/composables/useNpmRegistry'
 
 const props = defineProps<{
   packageName: string
@@ -107,18 +108,12 @@ const otherMajorGroups = ref<
 >([])
 const otherVersionsLoading = ref(false)
 
-// Cached full version list
+// Cached full version list (local to component instance)
 const allVersionsCache = ref<PackageVersionInfo[] | null>(null)
 const loadingVersions = ref(false)
 const hasLoadedAll = ref(false)
 
-// npm registry packument type (simplified)
-interface NpmPackument {
-  versions: Record<string, unknown>
-  time: Record<string, string>
-}
-
-// Load all versions directly from npm registry
+// Load all versions using shared function
 async function loadAllVersions(): Promise<PackageVersionInfo[]> {
   if (allVersionsCache.value) return allVersionsCache.value
 
@@ -136,23 +131,7 @@ async function loadAllVersions(): Promise<PackageVersionInfo[]> {
 
   loadingVersions.value = true
   try {
-    // Fetch directly from npm registry
-    const encodedName = props.packageName.startsWith('@')
-      ? `@${encodeURIComponent(props.packageName.slice(1))}`
-      : encodeURIComponent(props.packageName)
-
-    const data = await $fetch<NpmPackument>(`https://registry.npmjs.org/${encodedName}`)
-
-    // Convert to our format
-    const versions: PackageVersionInfo[] = Object.keys(data.versions)
-      .filter(v => data.time[v])
-      .map(version => ({
-        version,
-        time: data.time[version],
-        hasProvenance: false,
-      }))
-      .sort((a, b) => compareVersions(b.version, a.version))
-
+    const versions = await fetchAllPackageVersions(props.packageName)
     allVersionsCache.value = versions
     hasLoadedAll.value = true
     return versions

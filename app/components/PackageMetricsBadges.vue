@@ -57,12 +57,12 @@ const moduleFormatTooltip = computed(() => {
 
 const hasTypes = computed(() => {
   if (!analysis.value) return false
-  return analysis.value.types.kind === 'included' || analysis.value.types.kind === '@types'
+  return analysis.value.types?.kind === 'included' || analysis.value.types?.kind === '@types'
 })
 
 const typesTooltip = computed(() => {
   if (!analysis.value) return ''
-  switch (analysis.value.types.kind) {
+  switch (analysis.value.types?.kind) {
     case 'included':
       return 'TypeScript types included'
     case '@types':
@@ -82,13 +82,7 @@ const typesHref = computed(() => {
 </script>
 
 <template>
-  <!-- Loading skeleton -->
-  <div v-if="status === 'pending'" class="flex items-center gap-1.5">
-    <span class="skeleton w-8 h-5 rounded" />
-    <span class="skeleton w-12 h-5 rounded" />
-  </div>
-
-  <ul v-else-if="analysis" class="flex items-center gap-1.5 list-none m-0 p-0">
+  <ul v-if="analysis" class="flex items-center gap-1.5 list-none m-0 p-0">
     <!-- TypeScript types -->
     <li v-if="hasTypes">
       <component
