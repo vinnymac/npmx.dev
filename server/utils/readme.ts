@@ -1,7 +1,7 @@
 import { marked, type Tokens } from 'marked'
 import sanitizeHtml from 'sanitize-html'
 import { hasProtocol } from 'ufo'
-import type { ReadmeResponse } from '#shared/types/readme.js'
+import type { ReadmeResponse } from '#shared/types/readme'
 import { convertBlobToRawUrl, type RepositoryInfo } from '#shared/utils/git-providers'
 
 /**

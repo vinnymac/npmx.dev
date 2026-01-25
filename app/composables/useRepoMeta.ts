@@ -3,7 +3,7 @@ import {
   GITLAB_HOSTS,
   type ProviderId,
   type RepoRef,
-} from '#shared/utils/git-providers.js'
+} from '#shared/utils/git-providers'
 
 export type RepoMetaLinks = {
   repo: string
