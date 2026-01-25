@@ -35,6 +35,7 @@ The aim of [npmx.dev](https://npmx.dev) is to provide a better browser for the n
 - **Install size** &ndash; total install size including dependencies
 - **Playground links** &ndash; quick access to StackBlitz, CodeSandbox, and other demo environments from READMEs
 - **Infinite search** &ndash; auto-load additional search pages as you scroll
+- **Claim new packages** &ndash; register new package names directly from search results (via local connector)
 
 ### User & org pages
 
@@ -68,7 +69,7 @@ The aim of [npmx.dev](https://npmx.dev) is to provide a better browser for the n
 | Package admin (access/owners)  |    ✅     |    🚧    |
 | Org/team management            |    ✅     |    🚧    |
 | 2FA/account settings           |    ✅     |    ❌    |
-| Publishing packages            |    ✅     |    ❌    |
+| Claim new package names        |    ✅     |    ✅    |
 
 🚧 = coming soon
 
