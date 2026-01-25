@@ -154,6 +154,8 @@ const repositoryUrl = computed(() => {
   return url
 })
 
+const { meta: repoMeta, stars, forks, forksLink } = useRepoMeta(repositoryUrl)
+
 const homepageUrl = computed(() => {
   return displayVersion.value?.homepage ?? null
 })
@@ -281,7 +283,7 @@ defineOgImageComponent('Package', {
       <header class="mb-8 pb-8 border-b border-border">
         <div class="mb-4">
           <!-- Package name and version -->
-          <div class="flex items-start gap-2 mb-1.5 sm:gap-3 sm:mb-2 flex-wrap min-w-0">
+          <div class="flex items-baseline gap-2 mb-1.5 sm:gap-3 sm:mb-2 flex-wrap min-w-0">
             <h1
               class="font-mono text-2xl sm:text-3xl font-medium min-w-0 break-words"
               :title="pkg.name"
@@ -294,41 +296,35 @@ defineOgImageComponent('Package', {
               ><span v-if="orgName">/</span
               >{{ orgName ? pkg.name.replace(`@${orgName}/`, '') : pkg.name }}
             </h1>
-            <a
+            <span
               v-if="displayVersion"
-              :href="
-                hasProvenance(displayVersion)
-                  ? `https://www.npmjs.com/package/${pkg.name}/v/${displayVersion.version}#provenance`
-                  : undefined
-              "
-              :target="hasProvenance(displayVersion) ? '_blank' : undefined"
-              :rel="hasProvenance(displayVersion) ? 'noopener noreferrer' : undefined"
-              class="inline-flex items-center gap-1.5 px-3 py-1 font-mono text-sm bg-bg-muted border border-border rounded-md transition-colors duration-200 max-w-full shrink-0"
-              :class="
-                hasProvenance(displayVersion)
-                  ? 'hover:border-border-hover cursor-pointer'
-                  : 'cursor-default'
-              "
-              :title="`v${displayVersion.version}`"
+              class="inline-flex items-baseline gap-1.5 font-mono text-base sm:text-lg text-fg-muted shrink-0"
             >
-              <span class="truncate max-w-24 sm:max-w-32 md:max-w-48">
+              <a
+                v-if="hasProvenance(displayVersion)"
+                :href="`https://www.npmjs.com/package/${pkg.name}/v/${displayVersion.version}#provenance`"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center gap-1.5 text-fg-muted hover:text-fg-muted/80 transition-colors duration-200"
+                title="Verified provenance"
+              >
                 v{{ displayVersion.version }}
-              </span>
+                <span
+                  class="i-solar-shield-check-outline w-3.5 h-3.5 shrink-0"
+                  aria-hidden="true"
+                />
+              </a>
+              <span v-else>v{{ displayVersion.version }}</span>
               <span
                 v-if="
                   requestedVersion &&
                   latestVersion &&
                   displayVersion.version !== latestVersion.version
                 "
-                class="text-fg-subtle shrink-0"
+                class="text-fg-subtle text-sm shrink-0"
                 >(not latest)</span
               >
-              <span
-                v-if="hasProvenance(displayVersion)"
-                class="i-solar-shield-check-outline w-4 h-4 text-fg-muted shrink-0"
-                aria-label="Verified provenance"
-              />
-            </a>
+            </span>
 
             <!-- Package metrics (module format, types) -->
             <ClientOnly>
@@ -336,15 +332,29 @@ defineOgImageComponent('Package', {
                 v-if="displayVersion"
                 :package-name="pkg.name"
                 :version="displayVersion.version"
+                class="self-center ml-1 sm:ml-2"
               />
               <template #fallback>
-                <ul class="flex items-center gap-1.5">
+                <ul class="flex items-center gap-1.5 self-center ml-1 sm:ml-2">
                   <li class="skeleton w-8 h-5 rounded" />
                   <li class="skeleton w-12 h-5 rounded" />
                 </ul>
               </template>
             </ClientOnly>
+
+            <a
+              :href="`https://www.npmjs.com/package/${pkg.name}`"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="link-subtle font-mono text-sm inline-flex items-center gap-1.5 ml-auto shrink-0 self-center"
+              title="View on npm"
+            >
+              <span class="i-carbon-logo-npm w-4 h-4" aria-hidden="true" />
+              <span class="hidden sm:inline">npm</span>
+              <span class="sr-only sm:hidden">View on npm</span>
+            </a>
           </div>
+
           <!-- Fixed height description container to prevent CLS -->
           <div ref="descriptionRef" class="relative max-w-2xl min-h-[4.5rem]">
             <p
@@ -471,7 +481,10 @@ defineOgImageComponent('Package', {
                 class="link-subtle font-mono text-sm inline-flex items-center gap-1.5"
               >
                 <span class="i-carbon-logo-github w-4 h-4" aria-hidden="true" />
-                repo
+                <span v-if="repoMeta">
+                  {{ formatCompactNumber(stars, { decimals: 1 }) }} stars
+                </span>
+                <span v-else>repo</span>
               </a>
             </li>
             <li v-if="homepageUrl">
@@ -496,17 +509,19 @@ defineOgImageComponent('Package', {
                 issues
               </a>
             </li>
-            <li>
+
+            <li v-if="forks && forksLink">
               <a
-                :href="`https://www.npmjs.com/package/${pkg.name}`"
+                :href="forksLink"
                 target="_blank"
                 rel="noopener noreferrer"
                 class="link-subtle font-mono text-sm inline-flex items-center gap-1.5"
               >
-                <span class="i-carbon-cube w-4 h-4" aria-hidden="true" />
-                npm
+                <span class="i-carbon-fork w-4 h-4" aria-hidden="true" />
+                <span>{{ formatCompactNumber(forks, { decimals: 1 }) }} forks</span>
               </a>
             </li>
+
             <li v-if="jsrInfo?.exists && jsrInfo.url">
               <a
                 :href="jsrInfo.url"
