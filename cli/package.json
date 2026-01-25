@@ -6,11 +6,11 @@
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/danielroe/npmx.dev.git",
+    "url": "git+https://github.com/npmx-dev/npmx.dev.git",
     "directory": "cli"
   },
   "bugs": {
-    "url": "https://github.com/danielroe/npmx.dev/issues"
+    "url": "https://github.com/npmx-dev/npmx.dev/issues"
   },
   "homepage": "https://npmx.dev",
   "bin": {
