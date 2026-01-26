@@ -483,7 +483,7 @@ defineOgImageComponent('Package', {
           <div v-if="pkg.license" class="space-y-1">
             <dt class="text-xs text-fg-subtle uppercase tracking-wider">License</dt>
             <dd class="font-mono text-sm text-fg">
-              {{ pkg.license }}
+              <LicenseDisplay :license="pkg.license" />
             </dd>
           </div>
 
