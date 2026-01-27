@@ -34,8 +34,8 @@
 :root[data-theme='light'] {
   --bg: oklch(1 0 0);
   --bg-subtle: oklch(0.979 0.001 286.375);
-  --bg-muted: oklch(0.979 0.001 286.375 / 90%);
-  --bg-elevated: oklch(0.955 0 0);
+  --bg-muted: oklch(0.955 0 0);
+  --bg-elevated: oklch(0.94 0 0);
 
   --fg: oklch(0.145 0 0);
   --fg-muted: oklch(0.439 0 0);
