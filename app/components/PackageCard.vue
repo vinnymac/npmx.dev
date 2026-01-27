@@ -41,28 +41,37 @@ const emit = defineEmits<{
       aria-hidden="true"
     />
     <div class="mb-2 flex items-baseline justify-between gap-2">
-      <component
-        :is="headingLevel ?? 'h3'"
-        class="font-mono text-sm sm:text-base font-medium text-fg group-hover:text-fg transition-colors duration-200 min-w-0 break-all"
-      >
-        <NuxtLink
-          :to="{ name: 'package', params: { package: result.package.name.split('/') } }"
-          :prefetch-on="prefetch ? 'visibility' : 'interaction'"
-          class="focus-visible:outline-none decoration-none scroll-mt-48 scroll-mb-6 after:content-[''] after:absolute after:inset-0"
-          :data-result-index="index"
-          @focus="index != null && emit('focus', index)"
-          @mouseenter="index != null && emit('focus', index)"
+      <div class="flex items-baseline gap-2 min-w-0">
+        <!-- Exact match badge (mobile: before name, desktop: after name) -->
+        <span
+          v-if="isExactMatch"
+          class="sm:hidden shrink-0 text-xs px-1.5 py-0.5 rounded bg-accent/20 border border-accent/30 text-accent font-mono"
         >
-          {{ result.package.name }}
-        </NuxtLink>
-      </component>
-      <!-- Exact match badge -->
-      <span
-        v-if="isExactMatch"
-        class="shrink-0 text-xs px-1.5 py-0.5 rounded bg-accent/20 border border-accent/30 text-accent font-mono"
-      >
-        {{ $t('search.exact_match') }}
-      </span>
+          {{ $t('search.exact_match') }}
+        </span>
+        <component
+          :is="headingLevel ?? 'h3'"
+          class="font-mono text-sm sm:text-base font-medium text-fg group-hover:text-fg transition-colors duration-200 min-w-0 break-all"
+        >
+          <NuxtLink
+            :to="{ name: 'package', params: { package: result.package.name.split('/') } }"
+            :prefetch-on="prefetch ? 'visibility' : 'interaction'"
+            class="focus-visible:outline-none decoration-none scroll-mt-48 scroll-mb-6 after:content-[''] after:absolute after:inset-0"
+            :data-result-index="index"
+            @focus="index != null && emit('focus', index)"
+            @mouseenter="index != null && emit('focus', index)"
+          >
+            {{ result.package.name }}
+          </NuxtLink>
+        </component>
+        <!-- Exact match badge (desktop only) -->
+        <span
+          v-if="isExactMatch"
+          class="hidden sm:inline shrink-0 text-xs px-1.5 py-0.5 rounded bg-accent/20 border border-accent/30 text-accent font-mono"
+        >
+          {{ $t('search.exact_match') }}
+        </span>
+      </div>
       <!-- Mobile: version next to package name -->
       <div class="sm:hidden text-fg-subtle flex items-center gap-1.5 shrink-0">
         <span
