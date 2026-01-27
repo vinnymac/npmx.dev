@@ -48,7 +48,7 @@ const emit = defineEmits<{
         <NuxtLink
           :to="{ name: 'package', params: { package: result.package.name.split('/') } }"
           :prefetch-on="prefetch ? 'visibility' : 'interaction'"
-          class="focus-visible:outline-none decoration-none scroll-mt-48 scroll-mb-6 after:content-[''] after:absolute after:inset-0"
+          class="decoration-none scroll-mt-48 scroll-mb-6 after:content-[''] after:absolute after:inset-0"
           :data-result-index="index"
           @focus="index != null && emit('focus', index)"
           @mouseenter="index != null && emit('focus', index)"
@@ -108,7 +108,7 @@ const emit = defineEmits<{
               </dd>
             </div>
             <div v-if="result.package.license" class="flex items-center gap-1.5">
-              <dt class="sr-only">License</dt>
+              <dt class="sr-only">{{ $t('package.card.license') }}</dt>
               <dd>{{ result.package.license }}</dd>
             </div>
           </dl>
