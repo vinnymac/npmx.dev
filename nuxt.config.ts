@@ -95,6 +95,14 @@ export default defineNuxtConfig({
         '@shikijs/core',
       ],
     },
+    // Storage configuration for local development
+    // In production (Vercel), this is overridden by modules/cache.ts
+    storage: {
+      'fetch-cache': {
+        driver: 'fsLite',
+        base: './.cache/fetch',
+      },
+    },
   },
 
   fonts: {
@@ -157,6 +165,7 @@ export default defineNuxtConfig({
     langDir: 'locales',
     locales: [
       { code: 'en', language: 'en-US', name: 'English', file: 'en.json' },
+      { code: 'fr', language: 'fr-FR', name: 'Français', file: 'fr.json' },
       { code: 'zh-CN', language: 'zh-CN', name: '简体中文', file: 'zh-CN.json' },
     ],
   },
