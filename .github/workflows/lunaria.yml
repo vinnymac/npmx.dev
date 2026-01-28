@@ -28,8 +28,15 @@ jobs:
           # Makes the action clone the entire git history
           fetch-depth: 0
 
-      - name: Install Tools & Dependencies
-        uses: ./.github/actions/install
+      - uses: actions/checkout@v6
+      - run: corepack enable
+      - uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+          cache: pnpm
+
+      - name: 📦 Install dependencies
+        run: pnpm install
 
       - name: Generate Lunaria Overview
         uses: lunariajs/action@v1-prerelease
