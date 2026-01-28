@@ -1,6 +1,7 @@
 import type { JsrPackageInfo } from '#shared/types/jsr'
 import { getCreateShortName } from '#shared/utils/package-analysis'
 
+// @unocss-include
 export const packageManagers = [
   {
     id: 'npm',
@@ -9,6 +10,7 @@ export const packageManagers = [
     executeLocal: 'npx',
     executeRemote: 'npx',
     create: 'npm create',
+    icon: 'i-simple-icons:npm',
   },
   {
     id: 'pnpm',
@@ -17,6 +19,7 @@ export const packageManagers = [
     executeLocal: 'pnpm exec',
     executeRemote: 'pnpm dlx',
     create: 'pnpm create',
+    icon: 'i-simple-icons:pnpm',
   },
   {
     id: 'yarn',
@@ -25,6 +28,7 @@ export const packageManagers = [
     executeLocal: 'yarn',
     executeRemote: 'yarn dlx',
     create: 'yarn create',
+    icon: 'i-simple-icons:yarn',
   },
   {
     id: 'bun',
@@ -33,6 +37,7 @@ export const packageManagers = [
     executeLocal: 'bunx',
     executeRemote: 'bunx',
     create: 'bun create',
+    icon: 'i-simple-icons:bun',
   },
   {
     id: 'deno',
@@ -41,6 +46,7 @@ export const packageManagers = [
     executeLocal: 'deno run',
     executeRemote: 'deno run',
     create: 'deno run',
+    icon: 'i-simple-icons:deno',
   },
   {
     id: 'vlt',
@@ -49,6 +55,7 @@ export const packageManagers = [
     executeLocal: 'vlt x',
     executeRemote: 'vlt x',
     create: 'vlt x',
+    icon: 'i-custom-vlt',
   },
 ] as const
 
