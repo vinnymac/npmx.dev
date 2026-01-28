@@ -9,6 +9,7 @@
   "non_affiliation_disclaimer": "not affiliated with npm, Inc.",
   "trademark_disclaimer": "npm is a registered trademark of npm, Inc. This site is not affiliated with npm, Inc.",
   "footer": {
+    "docs": "docs",
     "source": "source",
     "social": "social",
     "chat": "chat"
@@ -48,7 +49,8 @@
     "theme_dark": "Dark",
     "theme_system": "System",
     "language": "Language",
-    "help_translate": "Help translate npmx"
+    "help_translate": "Help translate npmx",
+    "accent_colors": "Accent colors"
   },
   "common": {
     "loading": "Loading...",
@@ -102,7 +104,8 @@
       "forks": "fork | forks",
       "jsr": "jsr",
       "code": "code",
-      "docs": "docs"
+      "docs": "docs",
+      "fund": "fund"
     },
     "install": {
       "title": "Install",

@@ -183,6 +183,15 @@ const docsLink = computed(() => {
   }
 })
 
+const fundingUrl = computed(() => {
+  let funding = displayVersion.value?.funding
+  if (Array.isArray(funding)) funding = funding[0]
+
+  if (!funding) return null
+
+  return typeof funding === 'string' ? funding : funding.url
+})
+
 function normalizeGitUrl(url: string): string {
   return url
     .replace(/^git\+/, '')
@@ -426,7 +435,7 @@ defineOgImageComponent('Package', {
 
     <article
       v-else-if="status === 'success' && pkg"
-      class="package-page motion-safe:animate-fade-in"
+      class="package-page motion-safe:animate-fade-in overflow-x-hidden"
     >
       <!-- Package header -->
       <header class="area-header pb-8 border-b border-border">
@@ -761,6 +770,15 @@ defineOgImageComponent('Package', {
                 {{ $t('package.links.docs') }}
               </NuxtLink>
             </li>
+            <li v-if="fundingUrl">
+              <NuxtLink
+                :to="fundingUrl"
+                class="link-subtle font-mono text-sm inline-flex items-center gap-1.5"
+              >
+                <span class="i-carbon-favorite w-4 h-4" aria-hidden="true" />
+                {{ $t('package.links.fund') }}
+              </NuxtLink>
+            </li>
             <li v-if="displayVersion" class="sm:ml-auto">
               <NuxtLink
                 :to="{
@@ -878,7 +896,7 @@ defineOgImageComponent('Package', {
           </h2>
           <!-- Package manager tabs -->
           <div
-            class="flex items-center gap-1 p-0.5 bg-bg-subtle border border-border-subtle rounded-md"
+            class="flex items-center gap-1 p-0.5 bg-bg-subtle border border-border-subtle rounded-md overflow-x-auto"
             role="tablist"
             :aria-label="$t('package.install.pm_label')"
           >
@@ -920,11 +938,11 @@ defineOgImageComponent('Package', {
               <span class="w-2.5 h-2.5 rounded-full bg-fg-subtle" />
               <span class="w-2.5 h-2.5 rounded-full bg-fg-subtle" />
             </div>
-            <div class="px-3 pt-2 pb-3 sm:px-4 sm:pt-3 sm:pb-4 space-y-1">
+            <div class="px-3 pt-2 pb-3 sm:px-4 sm:pt-3 sm:pb-4 space-y-1 overflow-x-auto">
               <!-- Install command -->
-              <div class="flex items-center gap-2 group/installcmd">
-                <span class="text-fg-subtle font-mono text-sm select-none">$</span>
-                <code class="font-mono text-sm"
+              <div class="flex items-center gap-2 group/installcmd min-w-0">
+                <span class="text-fg-subtle font-mono text-sm select-none shrink-0">$</span>
+                <code class="font-mono text-sm min-w-0"
                   ><ClientOnly
                     ><span
                       v-for="(part, i) in installCommandParts"
@@ -950,9 +968,9 @@ defineOgImageComponent('Package', {
               </div>
 
               <!-- @types package install (when enabled) -->
-              <div v-if="showTypesInInstall" class="flex items-center gap-2">
-                <span class="text-fg-subtle font-mono text-sm select-none">$</span>
-                <code class="font-mono text-sm"
+              <div v-if="showTypesInInstall" class="flex items-center gap-2 min-w-0">
+                <span class="text-fg-subtle font-mono text-sm select-none shrink-0">$</span>
+                <code class="font-mono text-sm min-w-0"
                   ><span
                     v-for="(part, i) in typesInstallCommandParts"
                     :key="i"
@@ -1197,7 +1215,7 @@ defineOgImageComponent('Package', {
   gap: 2rem;
 
   /* Mobile: single column, sidebar above readme */
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   grid-template-areas:
     'header'
     'install'
@@ -1244,5 +1262,37 @@ defineOgImageComponent('Package', {
 }
 .area-sidebar {
   grid-area: sidebar;
+}
+
+/* Improve package name wrapping for narrow screens */
+.area-header h1 {
+  overflow-wrap: anywhere;
+}
+
+/* Ensure description text wraps properly */
+.area-header p {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* Allow install command text to break on narrow screens */
+.area-install code {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+/* Ensure all text content wraps on narrow screens */
+.package-page {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  max-width: 100%;
+}
+
+/* Ensure all children respect max-width */
+.package-page > * {
+  max-width: 100%;
+  min-width: 0;
 }
 </style>
