@@ -22,6 +22,7 @@ definePageMeta({
 const router = useRouter()
 
 const { packageName, requestedVersion, orgName } = usePackageRoute()
+const { t } = useI18n()
 
 if (import.meta.server) {
   assertValidPackageName(packageName.value)
