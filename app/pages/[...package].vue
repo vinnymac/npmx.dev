@@ -2,14 +2,6 @@
 import type { NpmVersionDist, PackumentVersion, ReadmeResponse } from '#shared/types'
 import type { JsrPackageInfo } from '#shared/types/jsr'
 import { assertValidPackageName } from '#shared/utils/npm'
-import {
-  getExecutableInfo,
-  getRunCommandParts,
-  getRunCommand,
-  isBinaryOnlyPackage,
-  isCreatePackage,
-} from '~/utils/run-command'
-import { getExecuteCommandParts, getExecuteCommand } from '~/utils/install-command'
 import { onKeyStroke } from '@vueuse/core'
 import { joinURL } from 'ufo'
 import { areUrlsEquivalent } from '#shared/utils/url'
@@ -22,7 +14,6 @@ definePageMeta({
 const router = useRouter()
 
 const { packageName, requestedVersion, orgName } = usePackageRoute()
-const { t } = useI18n()
 
 if (import.meta.server) {
   assertValidPackageName(packageName.value)
@@ -943,11 +934,11 @@ defineOgImageComponent('Package', {
                 <button
                   type="button"
                   class="px-2 py-0.5 font-mono text-xs text-fg-muted bg-bg-subtle/80 border border-border rounded transition-colors duration-200 opacity-0 group-hover/installcmd:opacity-100 hover:(text-fg border-border-hover) active:scale-95 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fg/50"
-                  :aria-label="t('package.install.copy_command')"
+                  :aria-label="$t('package.install.copy_command')"
                   @click.stop="copyInstallCommand"
                 >
                   <span aria-live="polite">{{
-                    copied ? t('common.copied') : t('common.copy')
+                    copied ? $t('common.copied') : $t('common.copy')
                   }}</span>
                 </button>
               </div>
@@ -979,7 +970,7 @@ defineOgImageComponent('Package', {
                 <!-- Comment line -->
                 <div class="flex items-center gap-2 pt-1">
                   <span class="text-fg-subtle/50 font-mono text-sm select-none"
-                    ># {{ t('package.run.locally') }}</span
+                    ># {{ $t('package.run.locally') }}</span
                   >
                 </div>
 
@@ -1006,7 +997,7 @@ defineOgImageComponent('Package', {
                     class="px-2 py-0.5 font-mono text-xs text-fg-muted bg-bg-subtle/80 border border-border rounded transition-colors duration-200 opacity-0 group-hover/runcmd:opacity-100 hover:(text-fg border-border-hover) active:scale-95 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fg/50"
                     @click.stop="copyRunCommand(executableInfo?.primaryCommand)"
                   >
-                    {{ runCopied ? t('common.copied') : t('common.copy') }}
+                    {{ runCopied ? $t('common.copied') : $t('common.copy') }}
                   </button>
                 </div>
               </template>
@@ -1016,7 +1007,7 @@ defineOgImageComponent('Package', {
                 <!-- Comment line -->
                 <div class="flex items-center gap-2 pt-1">
                   <span class="text-fg-subtle/50 font-mono text-sm select-none"
-                    ># {{ t('package.create.title') }}</span
+                    ># {{ $t('package.create.title') }}</span
                   >
                 </div>
 
@@ -1041,11 +1032,11 @@ defineOgImageComponent('Package', {
                   <button
                     type="button"
                     class="px-2 py-0.5 font-mono text-xs text-fg-muted bg-bg-subtle/80 border border-border rounded transition-colors duration-200 opacity-0 group-hover/createcmd:opacity-100 hover:(text-fg border-border-hover) active:scale-95 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fg/50"
-                    :aria-label="t('package.create.copy_command')"
+                    :aria-label="$t('package.create.copy_command')"
                     @click.stop="copyCreateCommand"
                   >
                     <span aria-live="polite">{{
-                      createCopied ? t('common.copied') : t('common.copy')
+                      createCopied ? $t('common.copied') : $t('common.copy')
                     }}</span>
                   </button>
                   <NuxtLink
