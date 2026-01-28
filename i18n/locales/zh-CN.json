@@ -233,7 +233,8 @@
       },
       "grant_button": "授权",
       "cancel_grant": "取消授权",
-      "grant_access": "+ 授予团队权限"
+      "grant_access": "+ 授予团队权限",
+      "caricando_teams": ""
     },
     "list": {
       "filter_label": "筛选包",

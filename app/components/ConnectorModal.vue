@@ -128,7 +128,7 @@ watch(open, isOpen => {
                 class="flex items-center p-3 bg-bg-muted border border-border rounded-lg font-mono text-sm"
               >
                 <span class="text-fg-subtle">$</span>
-                <span class="text-fg ml-2">{{ executeNpmxConnectorCommand }}</span>
+                <span class="text-fg-subtle ml-2">{{ executeNpmxConnectorCommand }}</span>
                 <button
                   type="button"
                   :aria-label="
