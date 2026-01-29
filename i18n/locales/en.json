@@ -206,7 +206,9 @@
       "username_placeholder": "username...",
       "add_button": "add",
       "cancel_add": "Cancel adding owner",
-      "add_owner": "+ Add owner"
+      "add_owner": "+ Add owner",
+      "show_more": "(show {count} more)",
+      "show_less": "(show less)"
     },
     "downloads": {
       "title": "Weekly Downloads",
