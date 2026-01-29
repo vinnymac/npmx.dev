@@ -221,6 +221,7 @@ async function resolveDependencyTree(
  * No filesystem operations - safe for serverless environments.
  *
  * Dependencies are resolved for linux-x64-glibc as a representative platform.
+ * @public
  */
 export const calculateInstallSize = defineCachedFunction(
   async (name: string, version: string): Promise<InstallSizeResult> => {
