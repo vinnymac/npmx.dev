@@ -9,6 +9,7 @@ import type {
   PackageVersionInfo,
 } from '#shared/types'
 import type { ReleaseType } from 'semver'
+import { mapWithConcurrency } from '#shared/utils/async'
 import { maxSatisfying, prerelease, major, minor, diff, gt, compare } from 'semver'
 import { isExactVersion } from '~/utils/versions'
 import { extractInstallScriptsInfo } from '~/utils/install-scripts'
@@ -26,7 +27,10 @@ const packumentCache = new Map<string, Promise<Packument | null>>()
  * Uses bulk API for unscoped packages, parallel individual requests for scoped.
  * Note: npm bulk downloads API does not support scoped packages.
  */
-async function fetchBulkDownloads(packageNames: string[]): Promise<Map<string, number>> {
+async function fetchBulkDownloads(
+  packageNames: string[],
+  options: Parameters<typeof $fetch>[1] = {},
+): Promise<Map<string, number>> {
   const downloads = new Map<string, number>()
   if (packageNames.length === 0) return downloads
 
@@ -44,6 +48,7 @@ async function fetchBulkDownloads(packageNames: string[]): Promise<Map<string, n
         try {
           const response = await $fetch<Record<string, { downloads: number } | null>>(
             `${NPM_API}/downloads/point/last-week/${chunk.join(',')}`,
+            options,
           )
           for (const [name, data] of Object.entries(response)) {
             if (data?.downloads !== undefined) {
@@ -176,7 +181,6 @@ function transformPackument(pkg: Packument, requestedVersion?: string | null): S
   }
 }
 
-/** @public */
 export function usePackage(
   name: MaybeRefOrGetter<string>,
   requestedVersion?: MaybeRefOrGetter<string | null>,
@@ -185,9 +189,11 @@ export function usePackage(
 
   const asyncData = useLazyAsyncData(
     () => `package:${toValue(name)}:${toValue(requestedVersion) ?? ''}`,
-    async () => {
+    async (_nuxtApp, { signal }) => {
       const encodedName = encodePackageName(toValue(name))
-      const { data: r, isStale } = await cachedFetch<Packument>(`${NPM_REGISTRY}/${encodedName}`)
+      const { data: r, isStale } = await cachedFetch<Packument>(`${NPM_REGISTRY}/${encodedName}`, {
+        signal,
+      })
       const reqVer = toValue(requestedVersion)
       const pkg = transformPackument(r, reqVer)
       const resolvedVersion = getResolvedVersion(pkg, reqVer)
@@ -224,7 +230,6 @@ function getResolvedVersion(pkg: SlimPackument, reqVer?: string | null): string 
   return resolved
 }
 
-/** @public */
 export function usePackageDownloads(
   name: MaybeRefOrGetter<string>,
   period: MaybeRefOrGetter<'last-day' | 'last-week' | 'last-month' | 'last-year'> = 'last-week',
@@ -233,10 +238,11 @@ export function usePackageDownloads(
 
   const asyncData = useLazyAsyncData(
     () => `downloads:${toValue(name)}:${toValue(period)}`,
-    async () => {
+    async (_nuxtApp, { signal }) => {
       const encodedName = encodePackageName(toValue(name))
       const { data, isStale } = await cachedFetch<NpmDownloadCount>(
         `${NPM_API}/downloads/point/${toValue(period)}/${encodedName}`,
+        { signal },
       )
       return { ...data, isStale }
     },
@@ -261,7 +267,6 @@ type NpmDownloadsRangeResponse = {
 /**
  * Fetch download range data from npm API.
  * Exported for external use (e.g., in components).
- * @public
  */
 export async function fetchNpmDownloadsRange(
   packageName: string,
@@ -286,7 +291,6 @@ export interface NpmSearchOptions {
   size?: number
 }
 
-/** @public */
 export function useNpmSearch(
   query: MaybeRefOrGetter<string>,
   options: MaybeRefOrGetter<NpmSearchOptions> = {},
@@ -306,7 +310,7 @@ export function useNpmSearch(
 
   const asyncData = useLazyAsyncData(
     () => `search:incremental:${toValue(query)}`,
-    async () => {
+    async (_nuxtApp, { signal }) => {
       const q = toValue(query)
       if (!q.trim()) {
         return emptySearchResponse
@@ -325,7 +329,7 @@ export function useNpmSearch(
 
       const { data: response, isStale } = await cachedFetch<NpmSearchResponse>(
         `${NPM_REGISTRY}/-/v1/search?${params.toString()}`,
-        {},
+        { signal },
         60,
       )
 
@@ -383,9 +387,11 @@ export function useNpmSearch(
 
       // Update cache
       if (cache.value && cache.value.query === q) {
+        const existingNames = new Set(cache.value.objects.map(obj => obj.package.name))
+        const newObjects = response.objects.filter(obj => !existingNames.has(obj.package.name))
         cache.value = {
           query: q,
-          objects: [...cache.value.objects, ...response.objects],
+          objects: [...cache.value.objects, ...newObjects],
           total: response.total,
         }
       } else {
@@ -502,14 +508,13 @@ function packumentToSearchResult(pkg: MinimalPackument, weeklyDownloads?: number
 /**
  * Fetch all packages for an npm organization
  * Returns search-result-like objects for compatibility with PackageList
- * @public
  */
 export function useOrgPackages(orgName: MaybeRefOrGetter<string>) {
   const cachedFetch = useCachedFetch()
 
   const asyncData = useLazyAsyncData(
     () => `org-packages:${toValue(orgName)}`,
-    async () => {
+    async (_nuxtApp, { signal }) => {
       const org = toValue(orgName)
       if (!org) {
         return emptySearchResponse
@@ -520,6 +525,7 @@ export function useOrgPackages(orgName: MaybeRefOrGetter<string>) {
       try {
         const { data } = await cachedFetch<Record<string, string>>(
           `${NPM_REGISTRY}/-/org/${encodeURIComponent(org)}/package`,
+          { signal },
         )
         packageNames = Object.keys(data)
       } catch (err) {
@@ -541,36 +547,31 @@ export function useOrgPackages(orgName: MaybeRefOrGetter<string>) {
 
       // Fetch packuments and downloads in parallel
       const [packuments, downloads] = await Promise.all([
-        // Fetch packuments in parallel (with concurrency limit)
+        // Fetch packuments with concurrency limit
         (async () => {
-          const concurrency = 10
-          const results: MinimalPackument[] = []
-          for (let i = 0; i < packageNames.length; i += concurrency) {
-            const batch = packageNames.slice(i, i + concurrency)
-            const batchResults = await Promise.all(
-              batch.map(async name => {
-                try {
-                  const encoded = encodePackageName(name)
-                  const { data: pkg } = await cachedFetch<MinimalPackument>(
-                    `${NPM_REGISTRY}/${encoded}`,
-                  )
-                  return pkg
-                } catch {
-                  return null
-                }
-              }),
-            )
-            for (const pkg of batchResults) {
-              // Filter out any unpublished packages (missing dist-tags)
-              if (pkg && pkg['dist-tags']) {
-                results.push(pkg)
+          const results = await mapWithConcurrency(
+            packageNames,
+            async name => {
+              try {
+                const encoded = encodePackageName(name)
+                const { data: pkg } = await cachedFetch<MinimalPackument>(
+                  `${NPM_REGISTRY}/${encoded}`,
+                  { signal },
+                )
+                return pkg
+              } catch {
+                return null
               }
-            }
-          }
-          return results
+            },
+            10,
+          )
+          // Filter out any unpublished packages (missing dist-tags)
+          return results.filter(
+            (pkg): pkg is MinimalPackument => pkg !== null && !!pkg['dist-tags'],
+          )
         })(),
         // Fetch downloads in bulk
-        fetchBulkDownloads(packageNames),
+        fetchBulkDownloads(packageNames, { signal }),
       ])
 
       // Convert to search results with download data
@@ -753,7 +754,6 @@ async function checkDependencyOutdated(
 /**
  * Composable to check for outdated dependencies.
  * Returns a reactive map of dependency name to outdated info.
- * @public
  */
 export function useOutdatedDependencies(
   dependencies: MaybeRefOrGetter<Record<string, string> | undefined>,
@@ -767,23 +767,20 @@ export function useOutdatedDependencies(
       return
     }
 
-    const results: Record<string, OutdatedDependencyInfo> = {}
     const entries = Object.entries(deps)
-    const batchSize = 5
+    const batchResults = await mapWithConcurrency(
+      entries,
+      async ([name, constraint]) => {
+        const info = await checkDependencyOutdated(cachedFetch, name, constraint)
+        return [name, info] as const
+      },
+      5,
+    )
 
-    for (let i = 0; i < entries.length; i += batchSize) {
-      const batch = entries.slice(i, i + batchSize)
-      const batchResults = await Promise.all(
-        batch.map(async ([name, constraint]) => {
-          const info = await checkDependencyOutdated(cachedFetch, name, constraint)
-          return [name, info] as const
-        }),
-      )
-
-      for (const [name, info] of batchResults) {
-        if (info) {
-          results[name] = info
-        }
+    const results: Record<string, OutdatedDependencyInfo> = {}
+    for (const [name, info] of batchResults) {
+      if (info) {
+        results[name] = info
       }
     }
 
@@ -803,7 +800,6 @@ export function useOutdatedDependencies(
 
 /**
  * Get tooltip text for an outdated dependency
- * @public
  */
 export function getOutdatedTooltip(
   info: OutdatedDependencyInfo,
@@ -828,7 +824,6 @@ export function getOutdatedTooltip(
 
 /**
  * Get CSS class for a dependency version based on outdated status
- * @public
  */
 export function getVersionClass(info: OutdatedDependencyInfo | undefined): string {
   if (!info) return 'text-fg-subtle'
