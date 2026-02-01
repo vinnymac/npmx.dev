@@ -124,40 +124,49 @@ export function useActiveTocItem(toc: Ref<TocItem[]>) {
       behavior: 'smooth',
     })
 
-    // Monitor scroll until it settles, THEN update URL hash
-    let lastScrollY = window.scrollY
-    let stableFrames = 0
-    let rafId: number | null = null
-    const STABLE_THRESHOLD = 5 // Number of frames with no movement to consider settled
-
-    const checkScrollSettled = () => {
-      const currentScrollY = window.scrollY
-
-      if (Math.abs(currentScrollY - lastScrollY) < 1) {
-        stableFrames++
-        if (stableFrames >= STABLE_THRESHOLD) {
-          // Scroll has settled - NOW update URL hash (won't trigger native scroll)
-          history.replaceState(null, '', `#${id}`)
-          setupObserver()
-          scrollCleanup = null
-          return
-        }
-      } else {
-        stableFrames = 0
-      }
-
-      lastScrollY = currentScrollY
-      rafId = requestAnimationFrame(checkScrollSettled)
+    const handleScrollEnd = () => {
+      history.replaceState(null, '', `#${id}`)
+      setupObserver()
+      scrollCleanup = null
     }
 
-    // Start monitoring
-    rafId = requestAnimationFrame(checkScrollSettled)
+    // Check for scrollend support (Chrome 114+, Firefox 109+, Safari 18+)
+    const supportsScrollEnd = 'onscrollend' in window
 
-    // Store cleanup function
-    scrollCleanup = () => {
-      if (rafId !== null) {
-        cancelAnimationFrame(rafId)
-        rafId = null
+    if (supportsScrollEnd) {
+      window.addEventListener('scrollend', handleScrollEnd, { once: true })
+      scrollCleanup = () => window.removeEventListener('scrollend', handleScrollEnd)
+    } else {
+      // Fallback: use RAF polling for older browsers
+      let lastScrollY = window.scrollY
+      let stableFrames = 0
+      let rafId: number | null = null
+      const STABLE_THRESHOLD = 5 // Number of frames with no movement to consider settled
+
+      const checkScrollSettled = () => {
+        const currentScrollY = window.scrollY
+
+        if (Math.abs(currentScrollY - lastScrollY) < 1) {
+          stableFrames++
+          if (stableFrames >= STABLE_THRESHOLD) {
+            handleScrollEnd()
+            return
+          }
+        } else {
+          stableFrames = 0
+        }
+
+        lastScrollY = currentScrollY
+        rafId = requestAnimationFrame(checkScrollSettled)
+      }
+
+      rafId = requestAnimationFrame(checkScrollSettled)
+
+      scrollCleanup = () => {
+        if (rafId !== null) {
+          cancelAnimationFrame(rafId)
+          rafId = null
+        }
       }
     }
 
@@ -169,7 +178,7 @@ export function useActiveTocItem(toc: Ref<TocItem[]>) {
         history.replaceState(null, '', `#${id}`)
         setupObserver()
       }
-    }, 1500)
+    }, 1000)
   }
 
   // Set up observer when TOC changes

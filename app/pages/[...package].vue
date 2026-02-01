@@ -940,14 +940,12 @@ function handleClick(event: MouseEvent) {
               />
             </a>
           </h2>
-          <!-- Mobile TOC dropdown (shown only on smaller screens) -->
           <ClientOnly>
             <ReadmeTocDropdown
-              v-if="readmeData?.toc?.length"
+              v-if="readmeData?.toc && readmeData.toc.length > 1"
               :toc="readmeData.toc"
               :active-id="activeTocId"
               :scroll-to-heading="scrollToHeading"
-              class="xl:hidden"
             />
           </ClientOnly>
         </div>
@@ -1012,17 +1010,6 @@ function handleClick(event: MouseEvent) {
             v-if="readmeData?.playgroundLinks?.length"
             :links="readmeData.playgroundLinks"
           />
-
-          <!-- Table of Contents (desktop only - hidden on lg and below) -->
-          <ClientOnly>
-            <ReadmeToc
-              v-if="readmeData?.toc?.length"
-              :toc="readmeData.toc"
-              :active-id="activeTocId"
-              :scroll-to-heading="scrollToHeading"
-              class="hidden xl:block"
-            />
-          </ClientOnly>
 
           <section
             id="compatibility"
