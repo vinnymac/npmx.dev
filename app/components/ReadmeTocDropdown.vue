@@ -99,7 +99,7 @@ function close() {
 }
 
 function select(id: string) {
-  scrollToAnchor(id, props.scrollToHeading)
+  scrollToAnchor(id, { scrollFn: props.scrollToHeading })
   close()
   triggerRef.value?.focus()
 }

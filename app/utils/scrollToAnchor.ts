@@ -1,11 +1,20 @@
+export interface ScrollToAnchorOptions {
+  /** Custom scroll function (e.g., from useActiveTocItem) */
+  scrollFn?: (id: string) => void
+  /** Whether to update the URL hash (default: true) */
+  updateUrl?: boolean
+}
+
 /**
  * Scroll to an element by ID, using a custom scroll function if provided,
  * otherwise falling back to default scroll behavior with header offset.
  *
  * @param id - The element ID to scroll to
- * @param scrollFn - Optional custom scroll function (e.g., from useActiveTocItem)
+ * @param options - Optional configuration for scroll behavior
  */
-export function scrollToAnchor(id: string, scrollFn?: (id: string) => void): void {
+export function scrollToAnchor(id: string, options?: ScrollToAnchorOptions): void {
+  const { scrollFn, updateUrl = true } = options ?? {}
+
   // Use custom scroll function if provided
   if (scrollFn) {
     scrollFn(id)
@@ -18,8 +27,9 @@ export function scrollToAnchor(id: string, scrollFn?: (id: string) => void): voi
 
   // Calculate scroll position with header offset (matches scroll-padding-top in main.css)
   const HEADER_OFFSET = 80
+  const PKG_STICKY_HEADER_OFFSET = 52
   const elementTop = element.getBoundingClientRect().top + window.scrollY
-  const targetScrollY = elementTop - HEADER_OFFSET
+  const targetScrollY = elementTop - (HEADER_OFFSET + PKG_STICKY_HEADER_OFFSET)
 
   // Use scrollTo for precise control
   window.scrollTo({
@@ -29,5 +39,7 @@ export function scrollToAnchor(id: string, scrollFn?: (id: string) => void): voi
 
   // Update URL hash after initiating scroll
   // Use replaceState to avoid triggering native scroll-to-anchor behavior
-  history.replaceState(null, '', `#${id}`)
+  if (updateUrl) {
+    history.replaceState(null, '', `#${id}`)
+  }
 }

@@ -1,5 +1,6 @@
 import type { TocItem } from '#shared/types/readme'
 import type { Ref } from 'vue'
+import { scrollToAnchor } from '~/utils/scrollToAnchor'
 
 /**
  * Composable for tracking the currently visible heading in a TOC.
@@ -93,8 +94,7 @@ export function useActiveTocItem(toc: Ref<TocItem[]>) {
 
   // Scroll to a heading with observer disconnection during scroll
   const scrollToHeading = (id: string) => {
-    const element = document.getElementById(id)
-    if (!element) return
+    if (!document.getElementById(id)) return
 
     // Clean up any previous scroll monitoring
     if (scrollCleanup) {
@@ -110,19 +110,8 @@ export function useActiveTocItem(toc: Ref<TocItem[]>) {
       observer.disconnect()
     }
 
-    // Calculate scroll position with header offset (5rem = 80px)
-    // This matches the scroll-padding-top in main.css
-    const HEADER_OFFSET = 80
-    const elementTop = element.getBoundingClientRect().top + window.scrollY
-    const targetScrollY = elementTop - HEADER_OFFSET
-
-    // Use scrollTo for precise control (respects CSS scroll-behavior: smooth)
-    // Don't update URL hash yet - do it after scroll completes to avoid
-    // browser native scroll-to-anchor behavior interfering
-    window.scrollTo({
-      top: targetScrollY,
-      behavior: 'smooth',
-    })
+    // Scroll, but do not update url until scroll ends
+    scrollToAnchor(id, { updateUrl: false })
 
     const handleScrollEnd = () => {
       history.replaceState(null, '', `#${id}`)
