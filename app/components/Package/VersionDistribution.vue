@@ -250,7 +250,7 @@ const xAxisLabels = computed(() => {
         tooltip-position="right"
         :tooltip-teleport-to="inModal ? '#chart-modal' : undefined"
         justify="start"
-        :class="{ 'opacity-50 pointer-events-none': pending }"
+        :class="pending ? 'opacity-50 pointer-events-none' : ''"
       />
     </div>
 
