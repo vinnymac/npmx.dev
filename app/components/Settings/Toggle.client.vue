@@ -10,6 +10,7 @@ withDefaults(
     tooltip?: string
     tooltipPosition?: 'top' | 'bottom' | 'left' | 'right'
     tooltipTeleportTo?: string
+    tooltipOffset?: number
   }>(),
   {
     justify: 'between',
@@ -35,6 +36,7 @@ const checked = defineModel<boolean>({
       :text="tooltip"
       :position="tooltipPosition ?? 'top'"
       :teleportTo="tooltipTeleportTo"
+      :offset="tooltipOffset"
     >
       <span class="text-sm text-fg font-medium text-start">
         {{ label }}

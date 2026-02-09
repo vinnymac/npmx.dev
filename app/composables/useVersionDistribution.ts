@@ -23,6 +23,7 @@ interface ChartDataItem {
 export function useVersionDistribution(packageName: MaybeRefOrGetter<string>) {
   const groupingMode = ref<VersionGroupingMode>('major')
   const hideSmallVersions = ref(false)
+  const showLowUsageVersions = ref(false)
   const pending = ref(false)
   const error = ref<Error | null>(null)
   const data = ref<VersionDistributionResponse | null>(null)
@@ -48,6 +49,7 @@ export function useVersionDistribution(packageName: MaybeRefOrGetter<string>) {
           query: {
             mode,
             filterOldVersions: hideSmallVersions.value ? 'true' : 'false',
+            filterThreshold: showLowUsageVersions.value ? '0' : '1',
           },
         },
       )
@@ -132,6 +134,10 @@ export function useVersionDistribution(packageName: MaybeRefOrGetter<string>) {
     fetchDistribution()
   })
 
+  watch(showLowUsageVersions, () => {
+    fetchDistribution()
+  })
+
   // Refetch when grouping mode changes - immediate to load initial data
   watch(
     groupingMode,
@@ -154,6 +160,7 @@ export function useVersionDistribution(packageName: MaybeRefOrGetter<string>) {
     // State
     groupingMode,
     hideSmallVersions,
+    showLowUsageVersions,
     pending,
     error,
     // Computed

@@ -8,6 +8,8 @@ const props = defineProps<{
   interactive?: boolean
   /** Teleport target selector (defaults to 'body') */
   teleportTo?: string
+  /** Offset distance in pixels (default: 4) */
+  offset?: number
 }>()
 
 const isVisible = shallowRef(false)
@@ -50,6 +52,7 @@ const tooltipAttrs = computed(() => {
     :position
     :interactive
     :teleportTo
+    :offset
     :tooltip-attr="tooltipAttrs"
     @mouseenter="show"
     @mouseleave="hide"

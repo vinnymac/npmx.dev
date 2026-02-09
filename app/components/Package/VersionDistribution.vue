@@ -68,8 +68,15 @@ const { width } = useElementSize(rootEl)
 const mobileBreakpointWidth = 640
 const isMobile = computed(() => width.value > 0 && width.value < mobileBreakpointWidth)
 
-const { groupingMode, hideSmallVersions, pending, error, chartDataset, hasData } =
-  useVersionDistribution(() => props.packageName)
+const {
+  groupingMode,
+  hideSmallVersions,
+  showLowUsageVersions,
+  pending,
+  error,
+  chartDataset,
+  hasData,
+} = useVersionDistribution(() => props.packageName)
 
 const compactNumberFormatter = useCompactNumberFormatter()
 
@@ -296,6 +303,7 @@ const endDate = computed(() => {
             :text="$t('package.versions.date_range_tooltip')"
             position="bottom"
             :teleportTo="inModal ? '#chart-modal' : undefined"
+            :offset="8"
             class="w-full"
           >
             <div class="flex flex-col gap-1 w-full">
@@ -326,6 +334,7 @@ const endDate = computed(() => {
             :text="$t('package.versions.date_range_tooltip')"
             position="bottom"
             :teleportTo="inModal ? '#chart-modal' : undefined"
+            :offset="8"
             class="w-full"
           >
             <div class="flex flex-col gap-1 w-full">
@@ -354,15 +363,29 @@ const endDate = computed(() => {
         </div>
       </div>
 
-      <SettingsToggle
-        v-model="hideSmallVersions"
-        :label="$t('package.versions.hide_old_versions')"
-        :tooltip="$t('package.versions.hide_old_versions_tooltip')"
-        tooltip-position="bottom"
-        :tooltip-teleport-to="inModal ? '#chart-modal' : undefined"
-        justify="start"
-        :class="pending ? 'opacity-50 pointer-events-none' : ''"
-      />
+      <div class="flex flex-col gap-4 w-full max-w-1/2">
+        <SettingsToggle
+          v-model="hideSmallVersions"
+          :label="$t('package.versions.hide_old_versions')"
+          :tooltip="$t('package.versions.hide_old_versions_tooltip')"
+          tooltip-position="bottom"
+          :tooltip-teleport-to="inModal ? '#chart-modal' : undefined"
+          :tooltip-offset="8"
+          justify="between"
+          :class="pending ? 'opacity-50 pointer-events-none' : ''"
+        />
+
+        <SettingsToggle
+          v-model="showLowUsageVersions"
+          :label="$t('package.versions.show_low_usage')"
+          :tooltip="$t('package.versions.show_low_usage_tooltip')"
+          tooltip-position="bottom"
+          :tooltip-teleport-to="inModal ? '#chart-modal' : undefined"
+          :tooltip-offset="8"
+          justify="between"
+          :class="pending ? 'opacity-50 pointer-events-none' : ''"
+        />
+      </div>
     </div>
 
     <h2 id="version-distribution-title" class="sr-only">

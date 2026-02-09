@@ -3,20 +3,27 @@ import type { HTMLAttributes } from 'vue'
 import type { Placement } from '@floating-ui/vue'
 import { autoUpdate, flip, offset, shift, useFloating } from '@floating-ui/vue'
 
-const props = defineProps<{
-  /** Tooltip text (optional when using content slot) */
-  text?: string
-  /** Position: 'top' | 'bottom' | 'left' | 'right' */
-  position?: 'top' | 'bottom' | 'left' | 'right'
-  /** is tooltip visible */
-  isVisible: boolean
-  /** Allow pointer events on tooltip (for interactive content like links) */
-  interactive?: boolean
-  /** attributes for tooltip element */
-  tooltipAttr?: HTMLAttributes
-  /** Teleport target selector (defaults to 'body') */
-  teleportTo?: string
-}>()
+const props = withDefaults(
+  defineProps<{
+    /** Tooltip text (optional when using content slot) */
+    text?: string
+    /** Position: 'top' | 'bottom' | 'left' | 'right' */
+    position?: 'top' | 'bottom' | 'left' | 'right'
+    /** is tooltip visible */
+    isVisible: boolean
+    /** Allow pointer events on tooltip (for interactive content like links) */
+    interactive?: boolean
+    /** attributes for tooltip element */
+    tooltipAttr?: HTMLAttributes
+    /** Teleport target selector (defaults to 'body') */
+    teleportTo?: string
+    /** Offset distance in pixels (default: 4) */
+    offset?: number
+  }>(),
+  {
+    offset: 4,
+  },
+)
 
 const triggerRef = useTemplateRef('triggerRef')
 const tooltipRef = useTemplateRef('tooltipRef')
@@ -26,7 +33,7 @@ const placement = computed<Placement>(() => props.position || 'bottom')
 const { floatingStyles } = useFloating(triggerRef, tooltipRef, {
   placement,
   whileElementsMounted: autoUpdate,
-  middleware: [offset(4), flip(), shift({ padding: 8 })],
+  middleware: [offset(props.offset), flip(), shift({ padding: 8 })],
 })
 </script>
 
