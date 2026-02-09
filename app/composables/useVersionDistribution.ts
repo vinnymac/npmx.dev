@@ -51,6 +51,7 @@ export function useVersionDistribution(packageName: MaybeRefOrGetter<string>) {
             filterOldVersions: showOldVersions.value ? 'false' : 'true',
             filterThreshold: showLowUsageVersions.value ? '0' : '1',
           },
+          cache: 'default', // Don't force-cache since query params change frequently
         },
       )
 
