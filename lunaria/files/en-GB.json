@@ -277,12 +277,13 @@
       "all_covered": "All versions are covered by tags above",
       "deprecated_title": "{version} (deprecated)",
       "view_all": "View {count} version | View all {count} versions",
-      "distribution_title": "Last Week of Version Distributions",
+      "distribution_title": "Semver Group",
       "distribution_modal_title": "Versions",
       "grouping_major": "Major",
       "grouping_minor": "Minor",
       "hide_old_versions": "Hide old versions",
-      "hide_old_versions_tooltip": "Hide versions older than 1 year"
+      "hide_old_versions_tooltip": "Hide versions older than 1 year",
+      "date_range_tooltip": "Last week of version distributions only"
     },
     "dependencies": {
       "title": "Dependency ({count}) | Dependencies ({count})",

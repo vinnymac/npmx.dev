@@ -9,6 +9,7 @@ import type {
 import { useElementSize } from '@vueuse/core'
 import { useCssVariables } from '~/composables/useColors'
 import { OKLCH_NEUTRAL_FALLBACK, transparentizeOklch } from '~/utils/colors'
+import TooltipApp from '~/components/Tooltip/App.vue'
 
 type TooltipParams = MinimalCustomFormatParams<VueUiXyDatapointItem[]> & {
   bars: VueUiXyDatasetBarItem[]
@@ -202,6 +203,38 @@ const xyDataset = computed<VueUiXyDatasetItem[]>(() => {
 const xAxisLabels = computed(() => {
   return chartDataset.value.map(item => item.name)
 })
+
+// Handle keyboard navigation for semver group toggle
+function handleGroupingKeydown(event: KeyboardEvent) {
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault()
+    // Toggle between major and minor
+    groupingMode.value = groupingMode.value === 'major' ? 'minor' : 'major'
+  } else if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+    event.preventDefault()
+    // Arrow keys also toggle
+    groupingMode.value = groupingMode.value === 'major' ? 'minor' : 'major'
+  }
+}
+
+// Calculate last week date range (matches npm's "last-week" API)
+const startDate = computed(() => {
+  const today = new Date()
+  const yesterday = new Date(
+    Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate() - 1),
+  )
+  const startObj = new Date(yesterday)
+  startObj.setUTCDate(startObj.getUTCDate() - 6)
+  return startObj.toISOString().slice(0, 10)
+})
+
+const endDate = computed(() => {
+  const today = new Date()
+  const yesterday = new Date(
+    Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate() - 1),
+  )
+  return yesterday.toISOString().slice(0, 10)
+})
 </script>
 
 <template>
@@ -218,20 +251,23 @@ const xAxisLabels = computed(() => {
             {{ $t('package.versions.distribution_title') }}
           </label>
           <div
-            class="inline-flex items-center bg-bg-subtle border border-border rounded-md overflow-hidden w-fit"
+            class="flex items-center bg-bg-subtle border border-border rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70"
             role="group"
             :aria-label="$t('package.versions.distribution_title')"
+            tabindex="0"
+            @keydown="handleGroupingKeydown"
           >
             <button
               type="button"
               :class="[
-                'px-4 py-1.75 font-mono text-sm transition-colors',
+                'px-4 py-1.75 font-mono text-sm transition-colors rounded-s-md',
                 groupingMode === 'major'
                   ? 'bg-accent text-bg font-medium'
                   : 'text-fg-subtle hover:text-fg hover:bg-bg-subtle/50',
               ]"
               :aria-pressed="groupingMode === 'major'"
               :disabled="pending"
+              tabindex="-1"
               @click="groupingMode = 'major'"
             >
               {{ $t('package.versions.grouping_major') }}
@@ -239,18 +275,81 @@ const xAxisLabels = computed(() => {
             <button
               type="button"
               :class="[
-                'px-4 py-1.75 font-mono text-sm transition-colors border-is border-border',
+                'px-4 py-1.75 font-mono text-sm transition-colors rounded-e-md border-is border-border',
                 groupingMode === 'minor'
                   ? 'bg-accent text-bg font-medium'
                   : 'text-fg-subtle hover:text-fg hover:bg-bg-subtle/50',
               ]"
               :aria-pressed="groupingMode === 'minor'"
               :disabled="pending"
+              tabindex="-1"
               @click="groupingMode = 'minor'"
             >
               {{ $t('package.versions.grouping_minor') }}
             </button>
           </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 flex-1">
+          <TooltipApp
+            :text="$t('package.versions.date_range_tooltip')"
+            position="bottom"
+            :teleportTo="inModal ? '#chart-modal' : undefined"
+            class="w-full"
+          >
+            <div class="flex flex-col gap-1 w-full">
+              <label
+                for="versionDistStartDate"
+                class="text-3xs font-mono text-fg-subtle tracking-wide uppercase"
+              >
+                {{ $t('package.trends.start_date') }}
+              </label>
+              <div class="relative flex items-center">
+                <span
+                  class="absolute inset-is-2 i-carbon:calendar w-4 h-4 text-fg-subtle shrink-0 pointer-events-none"
+                  aria-hidden="true"
+                />
+                <InputBase
+                  id="versionDistStartDate"
+                  :model-value="startDate"
+                  disabled
+                  type="date"
+                  class="w-full min-w-0 bg-transparent ps-7"
+                  size="medium"
+                />
+              </div>
+            </div>
+          </TooltipApp>
+
+          <TooltipApp
+            :text="$t('package.versions.date_range_tooltip')"
+            position="bottom"
+            :teleportTo="inModal ? '#chart-modal' : undefined"
+            class="w-full"
+          >
+            <div class="flex flex-col gap-1 w-full">
+              <label
+                for="versionDistEndDate"
+                class="text-3xs font-mono text-fg-subtle tracking-wide uppercase"
+              >
+                {{ $t('package.trends.end_date') }}
+              </label>
+              <div class="relative flex items-center">
+                <span
+                  class="absolute inset-is-2 i-carbon:calendar w-4 h-4 text-fg-subtle shrink-0 pointer-events-none"
+                  aria-hidden="true"
+                />
+                <InputBase
+                  id="versionDistEndDate"
+                  :model-value="endDate"
+                  disabled
+                  type="date"
+                  class="w-full min-w-0 bg-transparent ps-7"
+                  size="medium"
+                />
+              </div>
+            </div>
+          </TooltipApp>
         </div>
       </div>
 
@@ -258,7 +357,7 @@ const xAxisLabels = computed(() => {
         v-model="hideSmallVersions"
         :label="$t('package.versions.hide_old_versions')"
         :tooltip="$t('package.versions.hide_old_versions_tooltip')"
-        tooltip-position="right"
+        tooltip-position="bottom"
         :tooltip-teleport-to="inModal ? '#chart-modal' : undefined"
         justify="start"
         :class="pending ? 'opacity-50 pointer-events-none' : ''"
