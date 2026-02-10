@@ -375,29 +375,35 @@ const endDate = computed(() => {
       </div>
 
       <div class="flex flex-col gap-4 w-full max-w-1/2">
-        <SettingsToggle
-          v-model="showRecentOnly"
-          :label="$t('package.versions.recent_versions_only')"
-          :tooltip="$t('package.versions.recent_versions_only_tooltip')"
-          tooltip-position="bottom"
-          :tooltip-to="inModal ? '#chart-modal' : undefined"
-          :tooltip-offset="8"
-          justify="between"
-          reverse-order
-          :class="pending ? 'opacity-50 pointer-events-none' : ''"
-        />
+        <TooltipApp
+          :text="$t('package.versions.recent_versions_only_tooltip')"
+          position="bottom"
+          :to="inModal ? '#chart-modal' : undefined"
+          :offset="8"
+        >
+          <SettingsToggle
+            v-model="showRecentOnly"
+            :label="$t('package.versions.recent_versions_only')"
+            justify="start"
+            reverse-order
+            :class="pending ? 'opacity-50 pointer-events-none' : ''"
+          />
+        </TooltipApp>
 
-        <SettingsToggle
-          v-model="showLowUsageVersions"
-          :label="$t('package.versions.show_low_usage')"
-          :tooltip="$t('package.versions.show_low_usage_tooltip')"
-          tooltip-position="bottom"
-          :tooltip-to="inModal ? '#chart-modal' : undefined"
-          :tooltip-offset="8"
-          justify="between"
-          reverse-order
-          :class="pending ? 'opacity-50 pointer-events-none' : ''"
-        />
+        <TooltipApp
+          :text="$t('package.versions.show_low_usage_tooltip')"
+          position="bottom"
+          :to="inModal ? '#chart-modal' : undefined"
+          :offset="8"
+        >
+          <SettingsToggle
+            v-model="showLowUsageVersions"
+            :label="$t('package.versions.show_low_usage')"
+            justify="start"
+            reverse-order
+            :class="pending ? 'opacity-50 pointer-events-none' : ''"
+          />
+        </TooltipApp>
       </div>
     </div>
 
