@@ -45,3 +45,10 @@ file-tree-sprite.svg
 
 # output
 .vercel
+
+# Local development certificates (if using manual mkcert)
+*.pem
+*.key
+*.crt
+!public/**/*.{pem,key,crt}
+.localias-certs/
