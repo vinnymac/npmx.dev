@@ -88,7 +88,7 @@ fi
 # Start daemon
 echo "Starting localias daemon (requires sudo)..."
 sudo localias stop 2>/dev/null || true
-if ! sudo localias start 2>&1 | grep -q "server running"; then
+if ! sudo localias start; then
     error_exit "Failed to start daemon" "Check ports 80/443 or run: sudo localias start"
 fi
 

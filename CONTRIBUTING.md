@@ -105,6 +105,9 @@ Configure dev server to run at `http://npmx.test:3000` instead of `http://127.0.
 # 1. Install Localias
 brew install peterldowns/tap/localias
 
+# Linux/WSL2
+go install github.com/peterldowns/localias/cmd/localias@latest
+
 # 2. Run setup (requires sudo)
 pnpm setup:local
 
